@@ -1,0 +1,27 @@
+body {
+    background-color: #F2F7FF;
+}
+
+.bg-dar {
+    background-color: #0A0E31;
+}
+
+.bluedark {
+    background-color: #033c97;
+}
+
+.fontcusblue {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #0d6efd;
+}
+
+.fontcusgrey {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #c4c4c4;
+}
+
+@media only screen and (max-width: 768px) {
+    .space-top {
+      margin-top: 100px;
+    }
+  }
