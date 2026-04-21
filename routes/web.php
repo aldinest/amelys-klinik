@@ -48,6 +48,14 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])
             ->name('dashboard');
 
+        //Import & Export 
+        Route::post('/patients/import', [AdminPatient::class, 'import'])
+            ->name('patients.import');
+        Route::get('/patients/export', [AdminPatient::class, 'export'])
+            ->name('patients.export');
+        Route::get('/patients/pdf', [AdminPatient::class, 'pdf'])
+            ->name('patients.pdf');
+
         //Data Dokter
         Route::resource('doctors', DoctorController::class);
         Route::get('/doctors/{doctor}', [DoctorController::class, 'show'])
@@ -61,6 +69,7 @@ Route::middleware(['auth', 'role:admin'])
         Route::post('/patients/{patient}/create-account',
             [AdminPatient::class, 'createAccount']
             )->name('patients.create-account');
+
 
         //Data User
         Route::resource('users', UserController::class);

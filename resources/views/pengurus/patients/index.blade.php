@@ -36,42 +36,6 @@
                 <div class="card-header bg-white">
                     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
 
-                        {{-- ACTION BUTTONS --}}
-                        <div class="d-flex gap-2 flex-wrap align-items-center">
-
-                            <a href="{{ route('pengurus.patients.export') }}" 
-                               class="btn btn-success">
-                               <i class="fas fa-file-excel"></i> Export Excel
-                            </a>
-
-                            <form action="{{ route('pengurus.patients.import') }}"
-                                method="POST"
-                                enctype="multipart/form-data"
-                                class="d-inline">
-                                @csrf
-
-                                <!-- INPUT FILE DISSEMBUNYIKAN -->
-                                <input type="file"
-                                    name="file"
-                                    id="fileImport"
-                                    class="d-none"
-                                    required
-                                    onchange="this.form.submit()">
-
-                                <!-- TOMBOL KEREN BUAT PILIH FILE -->
-                                <button type="button"
-                                        class="btn btn-primary"
-                                        onclick="document.getElementById('fileImport').click()">
-                                    <i class="fas fa-upload"></i> Import Excel
-                                </button>
-                            </form>
-
-                            <!-- <a href="{{ route('pengurus.patients.pdf') }}" 
-                               class="btn btn-danger">
-                               <i class="fas fa-file-pdf"></i> Cetak PDF
-                            </a> -->
-                        </div>
-
                         {{-- SEARCH --}}
                         <form method="GET" action="{{ route('pengurus.patients.index') }}">
                             <div class="input-group">
@@ -137,19 +101,21 @@
                         </table>
                     </div>
 
-                    {{-- PAGINATION --}}
-                    <div class="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
-                        <small class="text-muted">
-                            Menampilkan 
-                            <strong>{{ $patients->firstItem() }}</strong> -
-                            <strong>{{ $patients->lastItem() }}</strong>
-                            dari <strong>{{ $patients->total() }}</strong> data
-                        </small>
-
-                        <div>
-                            {{ $patients->links() }}
+                {{-- FOOTER / PAGINATION --}}
+                <div class="card-footer bg-white">
+                    <div class="row align-items-center">
+                        <div class="col-sm-6 text-center text-sm-left">
+                            <p class="mb-0 small text-muted">
+                                Menampilkan <strong>{{ $patients->firstItem() ?? 0 }}</strong> sampai 
+                                <strong>{{ $patients->lastItem() ?? 0 }}</strong> dari 
+                                <strong>{{ $patients->total() ?? 0 }}</strong> data
+                            </p>
+                        </div>
+                        <div class="col-sm-6 d-flex justify-content-center justify-content-sm-end mt-2 mt-sm-0">
+                            {{ $patients->appends(request()->query())->links('pagination::bootstrap-4') }}
                         </div>
                     </div>
+                </div>
 
                 </div>
             </div>

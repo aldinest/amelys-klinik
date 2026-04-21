@@ -17,20 +17,15 @@ class PatientsExport implements FromCollection, WithHeadings, WithMapping, Shoul
     */
     public function collection()
     {
-        return Patient::select(
-            'name',
-            'address',
-            'phone',
-            'gender',
-            'date_of_birth',
-            'medical_record_number'
-        )->get();
+        // Ambil data pasien beserta relasi user-nya untuk dapat Email
+        return Patient::with('user')->get();
     }
 
     public function headings(): array
     {
         return [
             'Nama',
+            'Email',         // Email diambil dari akun user
             'Alamat',
             'No HP',
             'Gender',
@@ -39,22 +34,36 @@ class PatientsExport implements FromCollection, WithHeadings, WithMapping, Shoul
         ];
     }
 
+    /**
+    * @param mixed $patient
+    */
     public function map($patient): array
     {
         return [
             $patient->name,
+            // Jika pasien punya user (punya akun), tampilkan emailnya
+            $patient->user ? $patient->user->email : '-', 
             $patient->address,
             $patient->phone,
             $patient->gender == 'L' ? 'Laki-laki' : 'Perempuan',
-            \Carbon\Carbon::parse($patient->date_of_birth)->format('d-m-Y'),
-            strip_tags($patient->medical_record_number), // biar gak ada HTML aneh
+            // Format Y-m-d paling aman buat di-import balik nanti
+            $patient->date_of_birth ? \Carbon\Carbon::parse($patient->date_of_birth)->format('Y-m-d') : '-',
+            // Bersihkan tag HTML jika ada di field rekam medis
+            strip_tags($patient->medical_record_number),
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
         return [
-            1 => ['font' => ['bold' => true]], // header jadi bold
+            // Header jadi Bold dan background abu-abu tipis
+            1 => [
+                'font' => ['bold' => true],
+                'fill' => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'startColor' => ['argb' => 'FFE0E0E0'],
+                ],
+            ],
         ];
     }
 }

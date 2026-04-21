@@ -3,11 +3,14 @@
 namespace App\Imports;
 
 use App\Models\Patient;
+use App\Models\User;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Imports\HeadingRowFormatter;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 HeadingRowFormatter::default('slug');
 
@@ -17,53 +20,49 @@ class PatientsImport implements ToModel, WithHeadingRow
 
     public function model(array $row)
     {
-        
-        if (empty($row['nama'])) {
-            return null;
-        }
+        if (empty($row['nama'])) return null;
 
-        // Memanggil method helper parseDate di bawah
         $dob = $this->parseDate($row['tanggal_lahir'] ?? null);
+        $email = isset($row['email']) ? trim(strtolower($row['email'])) : '';
 
-        $rawGender = strtolower(trim($row['gender'] ?? ''));
-        $gender = str_contains($rawGender, 'perem') ? 'P' : 'L';
-
-        // 2. Cek Double pakai key 'nama' dan 'no_hp'
-        $exists = Patient::where('name', trim($row['nama']))
-            ->where('phone', $row['no_hp'])
-            ->where('date_of_birth', $dob)
-            ->exists();
-
-        if ($exists) {
-            $this->duplicates[] = $row['nama'] . ' (' . $row['no_hp'] . ')';
-            return null; 
+        // 1. Logika Pembuatan User (Akun Login)
+        $user = null;
+        if (!empty($email) && $email !== '-' && str_contains($email, '@')) {
+            // Gunakan updateOrCreate supaya nggak bentrok
+            $user = User::updateOrCreate(
+                ['email' => $email], // Cari berdasarkan email
+                [
+                    'name'     => trim($row['nama']),
+                    'password' => Hash::make(strtolower(explode(' ', $row['nama'])[0]) . ($dob ? Carbon::parse($dob)->format('dmY') : '123456')),
+                    'role'     => 'pasien',
+                ]
+            );
         }
 
-        // 3. Simpan ke database
-        return new Patient([
-            'name'          => trim($row['nama']),
-            'address'       => $row['alamat'] ?? 'Unknown',
-            'phone'         => $row['no_hp'],
-            'gender'        => $gender,
-            'date_of_birth' => $dob,
-            'user_id'       => null, 
-        ]);
+        // 2. Logika Simpan/Update Pasien
+        // Kita cari datanya, kalau ada kita update user_id-nya, kalau nggak ada kita buat baru.
+        return Patient::updateOrCreate(
+            [
+                'name'  => trim($row['nama']),
+                'phone' => $row['no_hp'] ?? '-',
+            ],
+            [
+                'address'       => $row['alamat'] ?? 'Unknown',
+                'gender'        => str_contains(strtolower($row['gender'] ?? ''), 'perem') ? 'P' : 'L',
+                'date_of_birth' => $dob,
+                'user_id'       => $user ? $user->id : null,
+                'medical_record_number' => $row['rekam_medis'] ?? null,
+            ]
+        );
     }
 
-    /**
-     * INI METHOD YANG TADI HILANG/UNDEFINED
-     * Pastikan letaknya di DALAM class (sebelum kurung kurawal penutup terakhir)
-     */
     private function parseDate($value)
     {
         if (!$value) return null;
-
         try {
-            // Jika formatnya angka (serial Excel)
             if (is_numeric($value)) {
                 return Date::excelToDateTimeObject($value)->format('Y-m-d');
             }
-            // Jika formatnya string biasa
             return Carbon::parse($value)->format('Y-m-d');
         } catch (\Exception $e) {
             return null;

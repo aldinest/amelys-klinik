@@ -45,11 +45,33 @@
             <div class="card shadow-sm">
                 <div class="card-header bg-white py-3">
                     <div class="d-flex justify-content-between align-items-center">
-                        {{-- Tombol Tambah --}}
-                        <a href="{{ route('admin.patients.create') }}" class="btn btn-primary">
-                            <i class="fas fa-plus-circle mr-1"></i> Tambah Pasien
-                        </a>
+                       
+                        {{-- Tombol Utama & Action Buttons --}}
+                        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-start mb-3" style="gap: 10px;">
+                            
+                            {{-- Tombol Tambah --}}
+                            <a href="{{ route('admin.patients.create') }}" class="btn btn-primary shadow-sm">
+                                <i class="fas fa-plus-circle mr-1"></i> Tambah Pasien
+                            </a>
 
+                            {{-- Container untuk Export & Import agar tetap sejajar sebelum benar-benar sempit --}}
+                            <div class="d-flex align-items-center" style="gap: 10px;">
+                                {{-- Export Excel --}}
+                                <a href="{{ route('admin.patients.export') }}" class="btn btn-success shadow-sm">
+                                    <i class="fas fa-file-excel mr-1"></i> Export Excel
+                                </a>
+
+                                {{-- Import Excel --}}
+                                <form action="{{ route('admin.patients.import') }}" method="POST" enctype="multipart/form-data" class="d-inline">
+                                    @csrf
+                                    <input type="file" name="file" id="fileImport" class="d-none" required onchange="this.form.submit()">
+                                    <button type="button" class="btn btn-info shadow-sm text-white" onclick="document.getElementById('fileImport').click()">
+                                        <i class="fas fa-upload mr-1"></i> Import Excel
+                                    </button>
+                                </form>
+                            </div>
+
+                        </div>
                         {{-- Search Form --}}
                         <div class="card-tools">
                             <form action="{{ route('admin.patients.index') }}" method="GET">
@@ -89,7 +111,7 @@
                                         </td>
                                         <td class="align-middle font-weight-bold">{{ $patient->name }}</td>
                                         <td class="align-middle">{{ $patient->address }}</td>
-                                        <td class="align-middle">{{ $patient->gender }}</td>
+                                        <td class="align-middle">{{ $patient->gender == 'L' ? 'Laki-laki' : 'Perempuan' }}</td>
                                         <td class="align-middle">{{ $patient->phone }}</td>
                                         <td class="text-center align-middle">
                                             {{-- Container Tombol Berjejer (Persegi Panjang) --}}
@@ -139,6 +161,7 @@
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </section>
