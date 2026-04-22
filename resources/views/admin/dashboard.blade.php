@@ -108,10 +108,13 @@
                               <div class="bg-primary text-white rounded d-flex align-items-center justify-content-center mr-3 shadow-sm" style="width: 60px; height: 60px; flex-shrink: 0;">
                                   <i class="fas fa-user-check fa-lg"></i>
                               </div>
-                              <div>
-                                  <h6 class="font-weight-bold mb-1 text-uppercase small text-primary">Langkah 2: Aktivasi Akun</h6>
-                                  <p class="small text-muted mb-0">Buka halaman <strong>Edit</strong> pada data master tadi, lalu buatkan akun login dengan menggunakan email mereka dan password default: <code class="text-danger">password123</code>.</p>
-                              </div>
+                        <div>
+                            <h6 class="font-weight-bold mb-1 text-uppercase small text-primary">Langkah 2: Status & Aktivasi Akun</h6>
+                            <p class="small text-muted mb-0">
+                                Pasien dengan email valid akan <strong>otomatis</strong> dibuatkan akun. Untuk yang belum memiliki akun, silakan buka halaman <strong>Edit</strong>, masukkan email, lalu gunakan password default: 
+                                <code class="text-danger">namadepan + tanggal lahir</code> (Contoh: <code class="text-secondary">budi12051995</code>).
+                            </p>
+                        </div>
                           </div>
                       </div>
 
