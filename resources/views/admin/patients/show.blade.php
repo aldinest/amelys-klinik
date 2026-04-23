@@ -67,39 +67,39 @@
                         </div>
                     </div>
 
-{{-- CARD 2: STATUS AKUN LOGIN --}}
-<div class="card card-outline card-info shadow-sm">
-    <div class="card-header bg-info">
-        <h3 class="card-title font-weight-bold text-white">
-            <i class="fas fa-user-lock mr-2"></i> Status Akun Aplikasi
-        </h3>
-    </div>
-    <div class="card-body">
-        @if($patient->user_id && $patient->user)
-            <div class="d-flex align-items-center">
-                <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center mr-3 shadow-sm" style="width: 42px; height: 42px;">
-                    <i class="fas fa-check"></i>
+                {{-- CARD 2: STATUS AKUN LOGIN --}}
+                <div class="card card-outline card-info shadow-sm">
+                    <div class="card-header bg-info">
+                        <h3 class="card-title font-weight-bold text-white">
+                            <i class="fas fa-user-lock mr-2"></i> Status Akun Aplikasi
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        @if($patient->user_id && $patient->user)
+                            <div class="d-flex align-items-center">
+                                <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center mr-3 shadow-sm" style="width: 42px; height: 42px;">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0 font-weight-bold text-success">Akun Pasien Aktif</h6>
+                                    {{-- Menampilkan Email dari tabel users --}}
+                                    <p class="mb-1 mt-1"><strong>Email:</strong> {{ $patient->user->email }}</p>
+                                    <small class="text-muted text-italic">Pasien sekarang dapat login menggunakan email ini.</small>
+                                </div>
+                            </div>
+                        @else
+                            <div class="d-flex align-items-center">
+                                <div class="bg-gray text-white rounded-circle d-flex align-items-center justify-content-center mr-3 shadow-sm" style="width: 42px; height: 42px;">
+                                    <i class="fas fa-user-slash"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0 font-weight-bold text-muted">Belum Memiliki Akun</h6>
+                                    <small class="text-muted italic">Klik <strong>Edit Data</strong> di atas untuk mendaftarkan email pasien ini.</small>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
                 </div>
-                <div>
-                    <h6 class="mb-0 font-weight-bold text-success">Akun Pasien Aktif</h6>
-                    {{-- Menampilkan Email dari tabel users --}}
-                    <p class="mb-1 mt-1"><strong>Email:</strong> {{ $patient->user->email }}</p>
-                    <small class="text-muted text-italic">Pasien sekarang dapat login menggunakan email ini.</small>
-                </div>
-            </div>
-        @else
-            <div class="d-flex align-items-center">
-                <div class="bg-gray text-white rounded-circle d-flex align-items-center justify-content-center mr-3 shadow-sm" style="width: 42px; height: 42px;">
-                    <i class="fas fa-user-slash"></i>
-                </div>
-                <div>
-                    <h6 class="mb-0 font-weight-bold text-muted">Belum Memiliki Akun</h6>
-                    <small class="text-muted italic">Klik <strong>Edit Data</strong> di atas untuk mendaftarkan email pasien ini.</small>
-                </div>
-            </div>
-        @endif
-    </div>
-</div>
 
                 </div>
             </div>

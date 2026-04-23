@@ -44,38 +44,32 @@
         <div class="container-fluid">
             <div class="card shadow-sm">
                 <div class="card-header bg-white py-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                       
+                    {{-- Diperbaiki agar responsif di HP --}}
+                    <div class="d-flex justify-content-between align-items-center flex-wrap" style="gap: 15px;">
+                        
                         {{-- Tombol Utama & Action Buttons --}}
-                        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-start mb-3" style="gap: 10px;">
-                            
-                            {{-- Tombol Tambah --}}
+                        <div class="d-flex flex-wrap align-items-center" style="gap: 10px;">
                             <a href="{{ route('admin.patients.create') }}" class="btn btn-primary shadow-sm">
                                 <i class="fas fa-plus-circle mr-1"></i> Tambah Pasien
                             </a>
 
-                            {{-- Container untuk Export & Import agar tetap sejajar sebelum benar-benar sempit --}}
-                            <div class="d-flex align-items-center" style="gap: 10px;">
-                                {{-- Export Excel --}}
-                                <a href="{{ route('admin.patients.export') }}" class="btn btn-success shadow-sm">
-                                    <i class="fas fa-file-excel mr-1"></i> Export Excel
-                                </a>
+                            <a href="{{ route('admin.patients.export') }}" class="btn btn-success shadow-sm">
+                                <i class="fas fa-file-excel mr-1"></i> Export Excel
+                            </a>
 
-                                {{-- Import Excel --}}
-                                <form action="{{ route('admin.patients.import') }}" method="POST" enctype="multipart/form-data" class="d-inline">
-                                    @csrf
-                                    <input type="file" name="file" id="fileImport" class="d-none" required onchange="this.form.submit()">
-                                    <button type="button" class="btn btn-info shadow-sm text-white" onclick="document.getElementById('fileImport').click()">
-                                        <i class="fas fa-upload mr-1"></i> Import Excel
-                                    </button>
-                                </form>
-                            </div>
-
+                            <form action="{{ route('admin.patients.import') }}" method="POST" enctype="multipart/form-data" class="d-inline">
+                                @csrf
+                                <input type="file" name="file" id="fileImport" class="d-none" required onchange="this.form.submit()">
+                                <button type="button" class="btn btn-info shadow-sm text-white" onclick="document.getElementById('fileImport').click()">
+                                    <i class="fas fa-upload mr-1"></i> Import Excel
+                                </button>
+                            </form>
                         </div>
+
                         {{-- Search Form --}}
-                        <div class="card-tools">
+                        <div class="flex-grow-1 flex-md-grow-0">
                             <form action="{{ route('admin.patients.index') }}" method="GET">
-                                <div class="input-group" style="width: 250px;">
+                                <div class="input-group">
                                     <input type="text" name="search" class="form-control" 
                                            placeholder="Cari nama pasien..." value="{{ request('search') }}">
                                     <div class="input-group-append">
@@ -111,10 +105,33 @@
                                         </td>
                                         <td class="align-middle font-weight-bold">{{ $patient->name }}</td>
                                         <td class="align-middle">{{ $patient->address }}</td>
-                                        <td class="align-middle">{{ $patient->gender == 'L' ? 'Laki-laki' : 'Perempuan' }}</td>
-                                        <td class="align-middle">{{ $patient->phone }}</td>
+
+                                        {{-- 1. BAGIAN JENIS KELAMIN (DENGAN BADGE AGAR LEBIH RAPI) --}}
+                                        <td class="align-middle text-center">
+                                            @if($patient->gender == 'L')
+                                                <span class="badge badge-info px-2 py-1">Laki-laki</span>
+                                            @else
+                                                <span class="badge badge-danger px-2 py-1" style="background-color: #e83e8c;">Perempuan</span>
+                                            @endif
+                                        </td>
+
+                                        {{-- 2. BAGIAN NOMOR HP (DENGAN LOGIKA WHATSAPP) --}}
+                                        <td class="align-middle font-weight-bold">
+                                            @php
+                                                // Membersihkan karakter non-angka dan mengubah 0 ke 62
+                                                $nomorBersih = preg_replace('/[^0-9]/', '', $patient->phone);
+                                                if (substr($nomorBersih, 0, 1) === '0') {
+                                                    $nomorWA = '62' . substr($nomorBersih, 1);
+                                                } else {
+                                                    $nomorWA = $nomorBersih;
+                                                }
+                                            @endphp
+                                            <a href="https://wa.me/{{ $nomorWA }}" target="_blank" class="text-dark">
+                                                <i class="fab fa-whatsapp text-success mr-1"></i>{{ $patient->phone }}
+                                            </a>
+                                        </td>
+
                                         <td class="text-center align-middle">
-                                            {{-- Container Tombol Berjejer (Persegi Panjang) --}}
                                             <div class="d-flex justify-content-center text-nowrap" style="gap: 5px;">
                                                 <a href="{{ route('admin.patients.show', $patient->id) }}" class="btn btn-info btn-sm">
                                                     <i class="fas fa-eye"></i> Detail
@@ -123,7 +140,7 @@
                                                     <i class="fas fa-edit"></i> Edit
                                                 </a>
                                                 <form action="{{ route('admin.patients.destroy', $patient->id) }}" method="POST"
-                                                      onsubmit="return confirm('Yakin mau hapus data ini?')">
+                                                    onsubmit="return confirm('Yakin mau hapus data ini?')">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button class="btn btn-danger btn-sm" type="submit">
@@ -147,23 +164,70 @@
                 </div>
 
                 {{-- FOOTER / PAGINATION --}}
-                <div class="card-footer bg-white">
+                <div class="card-footer bg-white py-3">
                     <div class="row align-items-center">
-                        <div class="col-sm-6 text-center text-sm-left">
+                        <div class="col-sm-12 col-md-6 text-center text-md-left mb-3 mb-md-0">
                             <p class="mb-0 small text-muted">
                                 Menampilkan <strong>{{ $patients->firstItem() ?? 0 }}</strong> sampai 
                                 <strong>{{ $patients->lastItem() ?? 0 }}</strong> dari 
                                 <strong>{{ $patients->total() ?? 0 }}</strong> data
                             </p>
                         </div>
-                        <div class="col-sm-6 d-flex justify-content-center justify-content-sm-end mt-2 mt-sm-0">
-                            {{ $patients->appends(request()->query())->links('pagination::bootstrap-4') }}
+                        <div class="col-sm-12 col-md-6">
+                            {{-- Wrapper Scrollable untuk Pagination --}}
+                            <div class="pagination-responsive-wrapper">
+                                {{ $patients->appends(request()->query())->links('pagination::bootstrap-4') }}
+                            </div>
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </section>
 </div>
+
+<style>
+    /* Menangani Pagination agar bisa di-scroll ke samping pada layar kecil */
+    .pagination-responsive-wrapper {
+        display: flex;
+        justify-content: center;
+    }
+
+    @media (min-width: 768px) {
+        .pagination-responsive-wrapper {
+            justify-content: flex-end;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .pagination-responsive-wrapper {
+            overflow-x: auto;
+            display: block;
+            white-space: nowrap;
+            padding: 5px 0;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .pagination-responsive-wrapper .pagination {
+            display: inline-flex;
+            margin-bottom: 0;
+        }
+
+        .page-link {
+            padding: 0.4rem 0.6rem !important;
+            font-size: 0.75rem !important;
+        }
+    }
+
+    /* Memastikan card-header rapi di mobile */
+    @media (max-width: 576px) {
+        .card-header .btn {
+            width: 100%; /* Tombol jadi full width di layar sangat kecil */
+            margin-bottom: 2px;
+        }
+        .input-group {
+            width: 100% !important;
+        }
+    }
+</style>
 @endsection

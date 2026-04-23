@@ -20,7 +20,7 @@ class ReservationController extends Controller
         $reservations = Reservation::with(['doctorSchedule.doctor'])
             ->where('patient_id', $patientId)
             ->latest()
-            ->paginate(10); // Menampilkan 10 data per halaman
+            ->paginate(10); 
 
         return view('pasien.reservations.index', compact('reservations'));
     }
@@ -55,11 +55,11 @@ class ReservationController extends Controller
                 return [
                     'id'    => $schedule->id,
                     'title' => date('H:i', strtotime($schedule->start_time)),
-                    'start' => $schedule->schedule_date, // TETEP PAKE schedule_date PUNYA LO
+                    'start' => $schedule->schedule_date, 
                     'extendedProps' => [
-                        'remaining' => $remaining, // SEKARANG DINAMIS
+                        'remaining' => $remaining, 
                         'doctor_name' => $doctor->name,
-                        'has_registered' => $hasRegistered, // TAMBAHAN UNTUK ALERT
+                        'has_registered' => $hasRegistered, 
                         'date_formatted' => date('d M Y', strtotime($schedule->schedule_date))
                     ]
                 ];

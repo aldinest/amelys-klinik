@@ -99,25 +99,50 @@ class PatientController extends Controller
     }
 
     // Admin/PatientController.php
-    public function createAccount(Patient $patient)
+    public function createAccount(Request $request, Patient $patient)
     {
-        // kalau sudah punya akun, stop
+        // 1. Validasi input email
+        $request->validate([
+            'email' => 'required|email|unique:users,email',
+        ], [
+            'email.unique' => 'Email ini sudah digunakan oleh akun lain.',
+        ]);
+
+        // 2. Kalau sudah punya akun, stop
         if ($patient->user_id) {
-            return back()->with('error', 'Akun sudah ada');
+            return back()->with('error', 'Pasien ini sudah memiliki akun aplikasi.');
         }
 
-        $user = User::create([
-            'name'     => $patient->name,
-            'email'    => request('email'),
-            'password' => bcrypt('password123'), // default
-            'role'     => 'pasien',
-        ]);
+        // 3. Logika Password: nama depan + tgl lahir (format dmy)
+        // Ambil nama depan (huruf kecil)
+        $firstName = strtolower(explode(' ', trim($patient->name))[0]);
+        
+        // Ambil tanggal lahir (format 17081945), jika tidak ada pakai default 123456
+        $formattedDob = $patient->date_of_birth 
+            ? \Carbon\Carbon::parse($patient->date_of_birth)->format('dmY') 
+            : '123456';
 
-        $patient->update([
-            'user_id' => $user->id
-        ]);
+        $passwordDefault = $firstName . $formattedDob;
 
-        return back()->with('success', 'Akun pasien berhasil dibuat');
+        try {
+            // 4. Buat User baru
+            $user = User::create([
+                'name'     => $patient->name,
+                'email'    => $request->email,
+                'password' => bcrypt($passwordDefault),
+                'role'     => 'pasien',
+            ]);
+
+            // 5. Hubungkan ke data pasien
+            $patient->update([
+                'user_id' => $user->id
+            ]);
+
+            return back()->with('success', "Akun berhasil diaktivasi! Password: $passwordDefault");
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
     }
 
 }

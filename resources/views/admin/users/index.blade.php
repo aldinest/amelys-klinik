@@ -44,16 +44,16 @@
         <div class="container-fluid">
             <div class="card shadow-sm">
                 <div class="card-header bg-white py-3">
-                    <div class="d-flex justify-content-between align-items-center">
-                        {{-- Tombol Tambah --}}
-                        <a href="{{ route('admin.users.create') }}" class="btn btn-primary">
+                    {{-- Responsif Header: Tombol Kiri, Search Kanan --}}
+                    <div class="d-flex justify-content-between align-items-center flex-wrap" style="gap: 15px;">
+                        
+                        <a href="{{ route('admin.users.create') }}" class="btn btn-primary shadow-sm">
                             <i class="fas fa-plus-circle mr-1"></i> Tambah User
                         </a>
 
-                        {{-- Search Form --}}
-                        <div class="card-tools">
+                        <div class="flex-grow-1 flex-md-grow-0">
                             <form action="{{ route('admin.users.index') }}" method="GET">
-                                <div class="input-group" style="width: 250px;">
+                                <div class="input-group">
                                     <input type="text" name="search" class="form-control" 
                                            placeholder="Cari nama atau email..." value="{{ request('search') }}">
                                     <div class="input-group-append">
@@ -97,7 +97,6 @@
                                             </span>
                                         </td>
                                         <td class="text-center align-middle">
-                                            {{-- Container Tombol Berjejer --}}
                                             <div class="d-flex justify-content-center text-nowrap" style="gap: 5px;">
                                                 <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-warning btn-sm text-white">
                                                     <i class="fas fa-edit"></i> Edit
@@ -127,17 +126,19 @@
                 </div>
 
                 {{-- FOOTER / PAGINATION --}}
-                <div class="card-footer bg-white">
+                <div class="card-footer bg-white py-3">
                     <div class="row align-items-center">
-                        <div class="col-sm-6 text-center text-sm-left">
+                        <div class="col-sm-12 col-md-6 text-center text-md-left mb-3 mb-md-0">
                             <p class="mb-0 small text-muted">
                                 Menampilkan <strong>{{ $users->firstItem() ?? 0 }}</strong> sampai 
                                 <strong>{{ $users->lastItem() ?? 0 }}</strong> dari 
                                 <strong>{{ $users->total() ?? 0 }}</strong> data
                             </p>
                         </div>
-                        <div class="col-sm-6 d-flex justify-content-center justify-content-sm-end mt-2 mt-sm-0">
-                            {{ $users->appends(request()->query())->links('pagination::bootstrap-4') }}
+                        <div class="col-sm-12 col-md-6">
+                            <div class="pagination-responsive-wrapper">
+                                {{ $users->appends(request()->query())->links('pagination::bootstrap-4') }}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -145,4 +146,30 @@
         </div>
     </section>
 </div>
+
+<style>
+    /* Pagination Responsive */
+    .pagination-responsive-wrapper {
+        display: flex;
+        justify-content: center;
+    }
+    @media (min-width: 768px) {
+        .pagination-responsive-wrapper { justify-content: flex-end; }
+    }
+    @media (max-width: 767.98px) {
+        .pagination-responsive-wrapper {
+            overflow-x: auto;
+            display: block;
+            white-space: nowrap;
+            padding: 5px 0;
+        }
+        .pagination-responsive-wrapper .pagination { display: inline-flex; margin-bottom: 0; }
+        .page-link { padding: 0.4rem 0.6rem !important; font-size: 0.75rem !important; }
+    }
+    /* Header Responsive */
+    @media (max-width: 576px) {
+        .card-header .btn { width: 100%; margin-bottom: 5px; }
+        .input-group { width: 100% !important; }
+    }
+</style>
 @endsection

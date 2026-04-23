@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             btn.disabled = true;
                         } else if (hasRegistered) {
                             btn.className = "schedule-item bg-warning shadow-sm";
-                            btn.innerHTML = `<strong><i class="fas fa-exclamation-circle"></i> Terdaftar</strong><span class="slot-info">Sudah ambil antrean</span>`;
+                            btn.innerHTML = `<strong><i class="fas fa-exclamation-circle"></i> Terdaftar</strong><span class="slot-info">Anda sudah terdaftar</span>`;
                             btn.onclick = () => Swal.fire('Sudah Terdaftar', 'Anda sudah mendaftar untuk jadwal ini. Cek menu Reservasi Saya.', 'info');
                         } else {
                             btn.className = isFull ? "schedule-item bg-danger" : "schedule-item bg-success shadow-sm";
