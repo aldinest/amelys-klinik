@@ -76,8 +76,8 @@
                         <div class="col-md-3 mb-3">
                             <div class="p-3 border rounded h-100 bg-light shadow-none">
                                 <div class="badge badge-primary mb-2">1. Data Master</div>
-                                <h6 class="font-weight-bold">Pasien & Excel</h6>
-                                <p class="small text-muted mb-0">Kelola profil pasien & gunakan fitur <strong>Import/Export Excel</strong> untuk migrasi data massal.</p>
+                                <h6 class="font-weight-bold">List Semua Pasien</h6>
+                                <p class="small text-muted mb-0">Kelola semua pasien & gunakan fitur <strong>chat whatsapp</strong> untuk menghubungi pasien.</p>
                             </div>
                         </div>
                         <div class="col-md-3 mb-3">
