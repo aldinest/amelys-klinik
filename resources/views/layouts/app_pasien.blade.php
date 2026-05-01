@@ -57,9 +57,9 @@
   @include('layouts.partials.navbar')
 
   <!-- /.navbar -->
+  <!-- masih kosongin karena fokus mobile -->
 
   <!-- Main Sidebar Container -->
-  @include('layouts.partials.sidebar_pasien')
 
   <!-- Content Wrapper. Contains page content -->
   <!-- <div class="content-wrapper">
@@ -130,6 +130,8 @@ document.addEventListener('click', function (e) {
     }
 });
 </script>
-
+  @if(auth()->user()->role === 'pasien')
+      @include('layouts.partials.mobile_nav')
+  @endif
 </body>
 </html>

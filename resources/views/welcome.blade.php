@@ -55,6 +55,28 @@
             color: #fff !important;
         }
         .spinner-rotate { border-top-color: var(--primary-blue) !important; }
+
+        /* Perbaikan Keterbacaan Mobile (Minisize) */
+     @media (max-width: 767px) {
+     #about .about-info {
+        background: rgba(255, 255, 255, 0.8); /* Memberi lapisan putih transparan di belakang teks */
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05); /* Bayangan halus agar teks lebih menonjol */
+    }
+
+    #about .about-info h2 {
+        font-size: 22px !important; /* Ukuran judul lebih proporsional di HP */
+        color: #333 !important;
+        margin-bottom: 15px;
+    }
+
+    #about .about-info p {
+        font-size: 14px !important; /* Ukuran teks isi agar tidak terlalu memenuhi layar */
+        line-height: 1.6;
+        color: #555 !important;
+    }
+     }
      </style>
 
 </head>
@@ -402,6 +424,78 @@
      <script src="{{ asset('js/smoothscroll.js') }}"></script>
      <script src="{{ asset('js/owl.carousel.min.js') }}"></script>
      <script src="{{ asset('js/custom.js') }}"></script>
+     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-messaging.js"></script>
+
+<script>
+    // 1. Konfigurasi Firebase (Sudah disesuaikan dengan screenshot lo)
+    const firebaseConfig = {
+    apiKey: "AIzaSyB56s9ttNHzWd7dYuVJoCEe3t6FCsrd9NY", 
+    authDomain: "amelys-klinik.firebaseapp.com",     
+    projectId: "amelys-klinik",                       
+    messagingSenderId: "269503372470",                
+    appId: "1:269503372470:web:dabe88f549b2da2ae61a17" 
+     };
+
+    // 2. Inisialisasi
+    firebase.initializeApp(firebaseConfig);
+    const messaging = firebase.messaging();
+
+    // 3. Fungsi utama untuk ambil token
+    function initFirebaseMessaging() {
+        console.log('Memulai proses registrasi notifikasi...');
+
+        Notification.requestPermission().then((permission) => {
+            if (permission === 'granted') {
+                console.log('Izin diberikan! Mengambil token...');
+
+                // Pakai VAPID Key yang dari Firebase Console lo
+                messaging.getToken({ 
+                    vapidKey: 'BFUgrpnrzKRQVlb4k3CTO3er5tAYdwf2jZl4d2tnWl2rfR8eyuan5n8JIasOupSLzZOl n8Rqcj5cPPSm7IlyM60' 
+                }).then((currentToken) => {
+                    if (currentToken) {
+                        console.log('TOKEN PASIEN DIDAPAT:', currentToken);
+                        // Kirim ke server Laravel
+                        saveTokenToDatabase(currentToken);
+                    } else {
+                        console.log('Token kosong. Pastikan SSL/HTTPS aktif atau bersihkan cache browser.');
+                    }
+                }).catch((err) => {
+                    console.log('Gagal ambil token:', err);
+                });
+            } else {
+                console.log('Izin notifikasi ditolak oleh user.');
+            }
+        });
+    }
+
+    // 4. Fungsi kirim token ke Laravel (Backend)
+    function saveTokenToDatabase(token) {
+        console.log('Mengirim token ke database Amelys Klinik...');
+
+        fetch('/api/save-token', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Laravel butuh ini buat keamanan
+            },
+            body: JSON.stringify({
+                token: token
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Berhasil! Server merespon:', data);
+        })
+        .catch(error => {
+            console.error('Gagal simpan ke database:', error);
+        });
+    }
+
+    // Jalankan fungsi saat halaman beres diload
+    initFirebaseMessaging();
+</script>
 
 </body>
 </html>

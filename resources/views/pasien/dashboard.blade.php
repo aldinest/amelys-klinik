@@ -1,223 +1,228 @@
 @extends('layouts.app_pasien')
 
 @section('content')
+<style>
+    .content-wrapper { 
+        background-color: #f8fafc !important; 
+        margin-left: 0 !important; 
+    }
+    
+    @media (min-width: 769px) {
+        .container-custom { padding: 0 8%; }
+    }
+
+    @media (max-width: 768px) {
+        .content-wrapper { padding-bottom: 90px !important; }
+        .container-custom { padding: 0 15px; }
+    }
+
+    /* Glassmorphism Alert */
+    .announcement-banner {
+        background: linear-gradient(135deg, #fff5f5 0%, #fff 100%);
+        border: 1px solid #fee2e2;
+        border-left: 5px solid #dc3545 !important;
+        border-radius: 15px;
+    }
+
+    /* Small Action Card */
+    .mini-card {
+        border-radius: 16px;
+        transition: all 0.3s ease;
+        border: 1px solid #e2e8f0 !important;
+        background: #fff;
+    }
+    .mini-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+    
+    .mini-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .step-number {
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+</style>
+
 <div class="content-wrapper">
-    {{-- HEADER --}}
-    <section class="content-header">
-        <div class="container-fluid">
-            <div class="row mb-2">
-                <div class="col-sm-6">
-                    <h1 class="font-weight-bold text-dark">Portal Pasien Amelys Klinik</h1>
-                    <p class="text-muted small">Cek jadwal, reservasi mandiri, dan riwayat medis Anda di sini.</p>
+    <div class="container-custom py-4">
+        
+        {{-- SECTION 1: GREETING --}}
+        <div class="mb-4 d-flex justify-content-between align-items-center">
+            <div>
+                @php
+                    $hour = \Carbon\Carbon::now()->addHours(7)->format('H');
+                    if ($hour >= 5 && $hour < 11) { $sapaan = 'Pagi'; }
+                    elseif ($hour >= 11 && $hour < 15) { $sapaan = 'Siang'; }
+                    elseif ($hour >= 15 && $hour < 19) { $sapaan = 'Sore'; }
+                    else { $sapaan = 'Malam'; }
+                @endphp
+                <h4 class="font-weight-bold mb-0 text-dark text-capitalize">Selamat {{ $sapaan }}, {{ explode(' ', auth()->user()->name)[0] }}!</h4>
+                <p class="text-muted small mb-0">Dashboard kesehatan Amelys Klinik.</p>
+            </div>
+            <!-- <div class="text-right">
+                <span class="badge badge-primary px-3 py-2" style="border-radius: 8px;">
+                    RM: {{ $patient->medical_record_number ?? 'BARU' }}
+                </span>
+            </div> -->
+        </div>
+
+        {{-- SECTION 2: PENGUMUMAN (PALING ATAS & JELAS) --}}
+        @if(count($news) > 0)
+        <div class="alert announcement-banner shadow-sm mb-4 p-3">
+            <div class="d-flex align-items-start">
+                <div class="mr-3 bg-danger text-white rounded-circle d-flex align-items-center justify-content-center mt-1" style="width: 35px; height: 35px; flex-shrink: 0;">
+                    <i class="fas fa-bullhorn fa-sm"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <strong class="text-danger small font-weight-bold">PENGUMUMAN TERBARU</strong>
+                        <span class="text-muted" style="font-size: 0.7rem;">{{ \Carbon\Carbon::parse($news[0]->date)->diffForHumans() }}</span>
+                    </div>
+                    <h6 class="font-weight-bold text-dark mb-1">{{ $news[0]->title }}</h6>
+                    {{-- Menggunakan nl2br agar enter/baris baru di database muncul sebagai baris baru di tampilan --}}
+                    <div class="mb-0 text-muted small" style="line-height: 1.5; white-space: pre-line;">
+                        {!! nl2br(e($news[0]->description)) !!}
+                    </div>
                 </div>
             </div>
         </div>
-    </section>
+        @endif
 
-    <section class="content">
-        <div class="container-fluid">
-
-            <div class="card card-outline card-primary shadow-sm mb-4">
-                <div class="card-header border-0 bg-white">
-                    <h3 class="card-title font-weight-bold text-primary">
-                        <i class="fas fa-project-diagram mr-2"></i> Panduan Layanan Online
-                    </h3>
-                </div>
-                <div class="card-body pt-0">
-                    <div class="row text-center">
-                        <div class="col-md-4 mb-3">
-                            <div class="p-3 border rounded h-100 bg-light shadow-none border-primary">
-                                <div class="badge badge-primary mb-2 px-3">1. Buat Reservasi</div>
-                                <h6 class="font-weight-bold">Pilih Dokter & Jadwal</h6>
-                                <p class="small text-muted mb-0">Pilih dokter, cek jadwal praktik harian yang tersedia, lalu isi detail tindakan medis Anda.</p>
+        {{-- SECTION 3: LANGKAH CEPAT (KOTAK KECIL/MINI) --}}
+        <div class="row mb-4">
+            {{-- LANGKAH 1 --}}
+            <div class="col-6 col-md-4 mb-3">
+                <a href="{{ url('/pasien/reservations/create') }}" class="text-decoration-none">
+                    <div class="card mini-card shadow-sm h-100 mb-0">
+                        <div class="card-body p-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="mini-icon bg-primary text-white mr-2 shadow-sm">
+                                    <i class="fas fa-calendar-plus"></i>
+                                </div>
+                                <span class="step-number text-primary">Tahap 1</span>
                             </div>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <div class="p-3 border rounded h-100 bg-light shadow-none border-info">
-                                <div class="badge badge-info mb-2 px-3 text-white">2. Reservasi Saya</div>
-                                <h6 class="font-weight-bold">Status Reservasi</h6>
-                                <p class="small text-muted mb-0">Lihat daftar reservasi Anda di menu <strong>Reservasi Saya</strong>. Tersedia opsi pembatalan jika berhalangan.</p>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <div class="p-3 border rounded h-100 bg-light shadow-none border-success">
-                                <div class="badge badge-success mb-2 px-3">3. Riwayat Medis</div>
-                                <h6 class="font-weight-bold">Hasil Periksa & Cetak</h6>
-                                <p class="small text-muted mb-0">Akses rekam medis Anda setelah selesai periksa, serta <strong>cetak hasil riwayat</strong> medis per kunjungan.</p>
-                            </div>
+                            <h6 class="font-weight-bold text-dark mb-1">Daftar</h6>
+                            <p class="text-muted mb-0" style="font-size: 0.75rem;">Reservasi jadwal periksa.</p>
                         </div>
                     </div>
-                </div>
+                </a>
             </div>
 
-        {{-- PANDUAN LAYANAN ONLINE --}}
-        <div class="card card-outline card-primary shadow-sm mb-4">
-            </div>
-
-        {{-- INFORMASI KHUSUS ANTRIAN --}}
-            <div class="row mb-4">
-                <div class="col-12">
-                    <div class="card border-0 shadow-sm" style="border-left: 5px solid #ffc107 !important; background-color: #fff9e6;">
-                        <div class="card-body py-3">
-                            <div class="row align-items-center">
-                                <div class="col-auto">
-                                    <i class="fas fa-exclamation-circle text-warning fa-2x"></i>
+            {{-- LANGKAH 2 --}}
+            <div class="col-6 col-md-4 mb-3">
+                <a href="{{ url('/pasien/reservations') }}" class="text-decoration-none">
+                    <div class="card mini-card shadow-sm h-100 mb-0">
+                        <div class="card-body p-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="mini-icon bg-success text-white mr-2 shadow-sm">
+                                    <i class="fas fa-tasks"></i>
                                 </div>
-                                <div class="col">
-                                    <h6 class="font-weight-bold text-dark mb-1">
-                                        PENTING: Prosedur Antrian drg. Agus (Poli Gigi)
-                                    </h6>
-                                    <p class="small text-muted mb-0">
-                                        Khusus untuk layanan <strong>drg. Agus</strong>, urutan masuk ruangan pemeriksaan <strong>berdasarkan nomor antrian fisik</strong> yang diambil di <strong>Apotek Amelys</strong> setelah Anda melakukan reservasi online, bukan berdasarkan urutan daftar di aplikasi.
-                                    </p>
-                                </div>
-                                <div class="col-md-auto mt-2 mt-md-0">
-                                    <span class="badge badge-warning px-3 py-2 text-uppercase">Wajib Ambil Antrian Fisik</span>
-                                </div>
+                                <span class="step-number text-success">Tahap 2</span>
                             </div>
+                            <h6 class="font-weight-bold text-dark mb-1">Status</h6>
+                            <p class="text-muted mb-0" style="font-size: 0.75rem;">Cek status reservasi.</p>
                         </div>
                     </div>
-                </div>
+                </a>
             </div>
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="card card-outline card-primary shadow-sm mb-3">
-                                <div class="card-header border-0 bg-white">
-                                    <h3 class="card-title font-weight-bold text-primary">
-                                        <i class="fas fa-id-card mr-2"></i> Informasi Pasien
-                                    </h3>
+            {{-- LANGKAH 3 --}}
+            <div class="col-md-4 col-12 mb-3">
+                <a href="{{ url('/pasien/medical-records') }}" class="text-decoration-none">
+                    <div class="card mini-card shadow-sm h-100 mb-0">
+                        <div class="card-body p-3">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="mini-icon bg-info text-white mr-2 shadow-sm">
+                                    <i class="fas fa-file-invoice"></i>
                                 </div>
-                                <div class="card-body box-profile pt-0">
-                                    <div class="row">
-                                        {{-- Kolom Kiri --}}
-                                        <div class="col-md-6">
-                                            <ul class="list-group list-group-unbordered mb-0">
-                                                <li class="list-group-item border-top-0 py-2">
-                                                    <b class="text-muted small text-uppercase">Nama Lengkap</b> 
-                                                    <span class="d-block font-weight-bold text-dark text-uppercase mt-1">{{ $patient->name }}</span>
-                                                </li>
-                                                <li class="list-group-item border-0 py-2">
-                                                    <b class="text-muted small text-uppercase">Jenis Kelamin</b> 
-                                                    <span class="d-block text-dark mt-1">{{ $patient->gender === 'L' ? 'Laki-laki' : 'Perempuan' }}</span>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                        {{-- Kolom Kanan --}}
-                                        <div class="col-md-6 border-left">
-                                            <ul class="list-group list-group-unbordered mb-0">
-                                                <li class="list-group-item border-top-0 py-2">
-                                                    <b class="text-muted small text-uppercase">No. Rekam Medis (RM)</b> 
-                                                    <span class="d-block font-weight-bold text-danger mt-1">{{ $patient->medical_record_number ?? 'B-000' }}</span>
-                                                </li>
-                                                <li class="list-group-item border-0 py-2">
-                                                    <b class="text-muted small text-uppercase">No. Telepon / HP</b> 
-                                                    <span class="d-block text-dark mt-1">{{ $patient->phone }}</span>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                    <hr class="mt-2 mb-1">
-                                    <ul class="list-group list-group-unbordered mb-0">
-                                        <li class="list-group-item border-0 pt-1 pb-0">
-                                            <b class="text-muted small text-uppercase"><i class="fas fa-history mr-1"></i> Total Kunjungan</b> 
-                                            <span class="float-right badge badge-success">{{ $totalMedicalRecords }} Kali Periksa</span>
-                                        </li>
-                                    </ul>
-                                </div>
+                                <span class="step-number text-info">Tahap 3</span>
                             </div>
-                        </div>
-
-                        {{-- JADWAL TERBARU --}}
-                        <div class="col-md-6">
-                            <div class="card card-outline card-info shadow-sm mb-3">
-                                <div class="card-header border-0 bg-white">
-                                    <h3 class="card-title font-weight-bold text-info">
-                                        <i class="fas fa-user-md mr-2"></i> Jadwal Dokter Hari Ini
-                                    </h3>
-                                </div>
-                                <div class="card-body p-0">
-                                    <table class="table table-hover table-valign-middle m-0">
-                                        <thead class="bg-light">
-                                            <tr class="small text-uppercase">
-                                                <th>Dokter</th>
-                                                <th class="text-center">Jam Praktek</th>
-                                                <th class="text-center">Aksi</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            @forelse($todaySchedules as $schedule)
-                                                <tr>
-                                                    <td>
-                                                        <div class="font-weight-bold text-primary">{{ $schedule->doctor->name }}</div>
-                                                        <small class="text-muted">{{ $schedule->doctor->specialist ?? 'Umum' }}</small>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <span class="badge badge-light border">{{ date('H:i', strtotime($schedule->start_time)) }} - {{ date('H:i', strtotime($schedule->end_time)) }}</span>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        <a href="{{ route('pasien.reservations.create', ['schedule' => $schedule->id]) }}" class="btn btn-outline-primary btn-sm font-weight-bold">
-                                                            Daftar
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                            @empty
-                                                <tr><td colspan="3" class="text-center py-4 text-muted small italic text-muted font-weight-bold">Tidak ada jadwal hari ini.</td></tr>
-                                            @endforelse
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
+                            <h6 class="font-weight-bold text-dark mb-1">Riwayat</h6>
+                            <p class="text-muted mb-0" style="font-size: 0.75rem;">History pemeriksaan.</p>
                         </div>
                     </div>
+                </a>
+            </div>
+        </div>
 
-                {{-- NEWS / INFORMASI DARI ADMIN --}}
-                <div class="row mt-2">
-                    <div class="col-12">
-                        <div class="card card-outline card-primary shadow-sm">
-                            <div class="card-header bg-white border-0">
-                                <h3 class="card-title font-weight-bold text-primary">
-                                    <i class="fas fa-bullhorn mr-2"></i> Informasi Klinik
-                                </h3>
-                            </div>
-                            <div class="card-body pt-0">
-                                <div class="row flex-row flex-nowrap overflow-auto pb-2" style="scrollbar-width: thin;">
-                                    @forelse($news as $item)
-                                    <div class="col-md-4 col-sm-6 col-10">
-                                        <div class="p-3 h-100 rounded shadow-sm border-left border-primary" style="background: #f8f9fa;">
-                                            <div class="mb-2">
-                                                <span class="badge badge-light text-primary p-0">
-                                                    <i class="far fa-calendar-alt mr-1"></i> {{ \Carbon\Carbon::parse($item->date)->translatedFormat('d M Y') }}
-                                                </span>
+        <div class="row">
+            {{-- JADWAL HARI INI --}}
+            <div class="col-md-7 mb-4">
+                <div class="card border-0 shadow-sm" style="border-radius: 20px;">
+                    <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                        <h6 class="font-weight-bold mb-0 text-dark">Jadwal Praktek Hari Ini</h6>
+                        <small class="text-muted">{{ \Carbon\Carbon::now()->translatedFormat('d M') }}</small>
+                    </div>
+                    <div class="card-body px-0 pt-2 pb-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <tbody>
+                                    @forelse($todaySchedules as $schedule)
+                                    <tr>
+                                        <td class="pl-4 align-middle border-0">
+                                            <div class="d-flex align-items-center">
+                                                <div class="bg-light rounded-circle mr-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                    <i class="fas fa-user-md text-primary"></i>
+                                                </div>
+                                                <div>
+                                                    <span class="d-block font-weight-bold text-dark small">{{ $schedule->doctor->name }}</span>
+                                                    <small class="text-muted" style="font-size: 0.7rem;">{{ $schedule->doctor->specialist ?? 'Umum' }}</small>
+                                                </div>
                                             </div>
-                                            <h6 class="font-weight-bold text-dark mb-2">{{ $item->title }}</h6>
-                                            <p class="small text-muted mb-0" style="line-height: 1.5;">
-                                                {{-- Menggunakan nl2br agar baris baru di database tetap terbaca --}}
-                                                {!! nl2br(e($item->description)) !!}
-                                            </p>
-                                        </div>
-                                    </div>
+                                        </td>
+                                        <td class="align-middle border-0 text-right pr-4">
+                                            <span class="badge badge-light border px-2 py-1 small">
+                                                {{ date('H:i', strtotime($schedule->start_time)) }} - {{ date('H:i', strtotime($schedule->end_time)) }}
+                                            </span>
+                                        </td>
+                                    </tr>
                                     @empty
-                                    <div class="col-12 text-center py-3 text-muted">
-                                        <p>Tidak ada informasi saat ini.</p>
-                                    </div>
+                                    <tr><td class="text-center py-4 small text-muted">Tidak ada jadwal hari ini.</td></tr>
                                     @endforelse
-                                </div>
-                            </div>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
+            </div>
 
+            {{-- KUNJUNGAN TERAKHIR --}}
+            <div class="col-md-5 mb-4">
+                <div class="card border-0 shadow-sm h-100" style="border-radius: 20px;">
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+                        <h6 class="font-weight-bold mb-0 text-dark">Terakhir Periksa</h6>
+                    </div>
+                    <div class="card-body p-4 text-center">
+                        @if(isset($latestMedicalRecord))
+                        <div class="mb-3">
+                            <i class="fas fa-notes-medical text-primary fa-2x"></i>
+                        </div>
+                        <h6 class="font-weight-bold mb-1">{{ $latestMedicalRecord->diagnosis }}</h6>
+                        <p class="text-muted small mb-3">{{ \Carbon\Carbon::parse($latestMedicalRecord->date)->translatedFormat('d F Y') }}</p>
+                        <a href="{{ url('/pasien/medical-records/'.$latestMedicalRecord->id) }}" class="btn btn-outline-primary btn-sm btn-block font-weight-bold" style="border-radius: 10px;">Lihat Hasil</a>
+                        @else
+                        <div class="py-3">
+                            <i class="fas fa-folder-open text-muted mb-2" style="opacity: 0.3;"></i>
+                            <p class="small text-muted mb-0">Belum ada riwayat medis.</p>
+                        </div>
+                        @endif
+                    </div>
                 </div>
-            </section>
+            </div>
         </div>
-
-    <style>
-        .content-wrapper { background-color: #f4f6f9 !important; }
-        .card { border-radius: 8px; border: none; }
-        .card-outline.card-primary { border-top: 3px solid #007bff !important; }
-        .box-profile { padding-top: 0rem; }
-        .profile-username { font-size: 1.25rem; margin-top: 0px; }
-        .border-left { border-left: 1px solid #dee2e6 !important; }
-    </style>
+        
+        {{-- INFO KHUSUS (OPTIONAL FOOTER) --}}
+        <div class="text-center p-3">
+            <p class="text-muted" style="font-size: 0.7rem;">* Pastikan datang 15 menit sebelum jam praktek dimulai.</p>
+        </div>
+    </div>
+</div>
 @endsection

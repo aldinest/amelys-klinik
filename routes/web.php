@@ -24,6 +24,7 @@ use App\Http\Controllers\Pengurus\MedicalRecordController;
 use App\Http\Controllers\Pasien\PatientDashboardController;
 use App\Http\Controllers\Pasien\ReservationController as PasienReservation;
 use App\Http\Controllers\Pasien\MedicalRecordController as PasienMedicalRecord;
+use App\Http\Controllers\Pasien\ProfileController as PasienProfile;
 use Illuminate\Support\Facades\Route;
 
 // Route::get('/', function () {
@@ -121,7 +122,7 @@ Route::middleware(['auth', 'role:pengurus'])
         //Rekam Medis Pasien
         Route::resource('medical-records', MedicalRecordController::class)
             ->only(['index', 'create', 'store', 'show']);
-
+        
 
      });
 
@@ -139,6 +140,12 @@ Route::middleware(['auth', 'role:pasien'])
 
         Route::get('reservations/calendar/{doctor}', [\App\Http\Controllers\Pasien\ReservationController::class, 'calendar'])
             ->name('reservations.calendar');
+
+        //Profile
+        Route::get('/profile', [PasienProfile::class, 'index'])->name('profile.index');
+        Route::put('/profile/update', [PasienProfile::class, 'update'])->name('profile.update');
+        Route::put('/profile/password', [PasienProfile::class, 'updatePassword'])->name('profile.password');
+
 
         });
 

@@ -4,15 +4,18 @@
 @section('content')
 <div class="content-wrapper">
     {{-- HEADER --}}
-    <section class="content-header">
+    <section class="content-header pt-3 pb-2">
         <div class="container-fluid">
-            <div class="row mb-3 align-items-center">
+            <div class="row align-items-end">
                 <div class="col-sm-6">
-                    <h1 class="font-weight-bold text-dark"><i class="fas fa-file-medical-alt mr-2 text-info"></i>Riwayat Kesehatan</h1>
-                    <p class="text-muted mb-0">Daftar seluruh hasil pemeriksaan medis Anda.</p>
+                    {{-- Menggunakan h3 agar tidak kebesaran --}}
+                    <h3 class="m-0 font-weight-bold text-dark" style="letter-spacing: -0.5px; font-size: 1.5rem;">
+                        <i class="fas fa-file-medical-alt mr-2 text-info" style="font-size: 1.3rem;"></i>Riwayat Kesehatan
+                    </h3>
+                    <p class="text-muted mb-0 small">Daftar seluruh hasil pemeriksaan medis Anda.</p>
                 </div>
-                <div class="col-sm-6 d-none d-sm-block">
-                    <ol class="breadcrumb float-sm-right">
+                <div class="col-sm-6 d-none d-sm-block text-right">
+                    <ol class="breadcrumb float-sm-right bg-transparent p-0 m-0 small">
                         <li class="breadcrumb-item"><a href="{{ route('pasien.dashboard') }}">Dashboard</a></li>
                         <li class="breadcrumb-item active">Rekam Medis</li>
                     </ol>
@@ -26,17 +29,19 @@
         <div class="container-fluid">
             
             {{-- SEARCH & FILTER CARD --}}
-            <div class="card shadow-sm border-0 mb-4">
+            <div class="card shadow-sm border-0 mb-4" style="border-radius: 12px;">
                 <div class="card-body p-3">
                     <form method="GET" action="{{ route('pasien.medical-records.index') }}">
-                        <div class="row">
+                        <div class="row align-items-center">
                             <div class="col-md-6">
                                 <div class="input-group">
+                                    {{-- form-control ukuran standar lebih rapi untuk dashboard --}}
                                     <input type="search" name="search" value="{{ request('search') }}" 
-                                           class="form-control form-control-lg border-right-0" 
-                                           placeholder="Cari diagnosa atau nama dokter...">
+                                        class="form-control border-right-0" 
+                                        style="border-radius: 8px 0 0 8px;"
+                                        placeholder="Cari diagnosa atau nama dokter...">
                                     <div class="input-group-append">
-                                        <button class="btn btn-primary px-4" type="submit">
+                                        <button class="btn btn-info px-4" type="submit" style="border-radius: 0 8px 8px 0;">
                                             <i class="fas fa-search"></i>
                                         </button>
                                     </div>
@@ -44,8 +49,8 @@
                             </div>
                             @if(request('search'))
                             <div class="col-md-2 mt-2 mt-md-0">
-                                <a href="{{ route('pasien.medical-records.index') }}" class="btn btn-light btn-block border">
-                                    <i class="fas fa-undo mr-1"></i> Reset
+                                <a href="{{ route('pasien.medical-records.index') }}" class="btn btn-light btn-block border-0 shadow-sm" style="border-radius: 8px;">
+                                    <i class="fas fa-undo mr-1 text-muted"></i> Reset
                                 </a>
                             </div>
                             @endif
@@ -57,48 +62,43 @@
             {{-- DAFTAR REKAM MEDIS --}}
             <div class="row">
                 @forelse ($medicalRecords as $record)
-                    <div class="col-md-6 col-lg-4">
-                        <div class="card card-outline card-info shadow-sm h-100 transition-card">
-                            <div class="card-header bg-white border-bottom-0">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <span class="text-xs text-muted font-weight-bold text-uppercase d-block">Tanggal Periksa</span>
-                                        <h5 class="font-weight-bold text-dark mb-0">
-                                            {{ \Carbon\Carbon::parse($record->examined_at)->translatedFormat('d F Y') }}
-                                        </h5>
+                    <div class="col-md-6 col-lg-4 mb-4"> {{-- Tambah margin bottom biar gak nempel di HP --}}
+                        <div class="card shadow-sm h-100 transition-card border-0" style="border-left: 5px solid #17a2b8;">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="badge badge-light text-info border-0 px-2 py-1" style="font-size: 0.7rem;">
+                                        <i class="far fa-calendar-alt mr-1"></i>
+                                        {{ \Carbon\Carbon::parse($record->examined_at)->translatedFormat('d M Y') }}
+                                    </span>
+                                    <small class="text-muted font-weight-bold">{{ \Carbon\Carbon::parse($record->examined_at)->format('H:i') }} WIB</small>
+                                </div>
+
+                                <div class="bg-light rounded p-3 mb-3 border-0">
+                                    <label class="text-xs text-muted text-uppercase font-weight-bold mb-1 d-block" style="font-size: 0.65rem; letter-spacing: 0.5px;">Diagnosa Utama</label>
+                                    <h6 class="font-weight-bold text-dark mb-0">
+                                        <i class="fas fa-notes-medical mr-2 text-danger"></i>{{ $record->diagnosis }}
+                                    </h6>
+                                </div>
+
+                                <div class="small px-1">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Dokter:</span>
+                                        <span class="font-weight-bold text-dark text-capitalize">{{ $record->doctor->name ?? 'Dokter Klinik' }}</span>
                                     </div>
-                                    <!-- <span class="badge badge-light p-2 border text-info">
-                                        <i class="far fa-clock mr-1"></i>{{ \Carbon\Carbon::parse($record->examined_at)->format('H:i') }}
-                                    </span> -->
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-muted">Tindakan:</span>
+                                        <span class="text-dark text-right ml-3 text-truncate" style="max-width: 150px;">{{ $record->complaint }}</span>
+                                    </div>
                                 </div>
                             </div>
-                            
-                            <!-- <div class="card-body py-2">
-                                <div class="p-3 bg-light rounded shadow-none border-0 mb-3">
-                                    <label class="text-xs text-muted text-uppercase font-weight-bold mb-1 d-block">Hasil Diagnosa</label>
-                                    <h6 class="font-weight-bold text-danger mb-0">
-                                        <i class="fas fa-stethoscope mr-2"></i>{{ $record->diagnosis }}
-                                    </h6>
-                                </div> -->
 
-                                <table class="table table-sm table-borderless mb-0">
-                                    <tr>
-                                        <td width="30%" class="text-muted small">Dokter</td>
-                                        <td class="small font-weight-bold text-dark">: {{ $record->doctor->name ?? 'Dokter' }}</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="text-muted small">Tindakan</td>
-                                        <td class="small text-dark">: {{ Str::limit($record->complaint, 70) }}</td>
-                                    </tr>
-                                </table>
-                            </div>
-
-                            <!-- <div class="card-footer bg-white border-top-0 pt-0 pb-3">
+                            <div class="card-footer bg-white border-top-0 pt-0 pb-3 px-3">
                                 <a href="{{ route('pasien.medical-records.show', $record->id) }}" 
-                                   class="btn btn-outline-info btn-sm btn-block font-weight-bold py-2 rounded-pill shadow-none">
-                                    Lihat Detail Pemeriksaan <i class="fas fa-arrow-right ml-1"></i>
+                                class="btn btn-outline-info btn-sm btn-block font-weight-bold py-2 shadow-none"
+                                style="border-radius: 8px; border-width: 1.5px;">
+                                    Detail Rekam Medis <i class="fas fa-chevron-right ml-1 small"></i>
                                 </a>
-                            </div> -->
+                            </div>
                         </div>
                     </div>
                 @empty

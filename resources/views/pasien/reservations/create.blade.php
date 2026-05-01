@@ -1,222 +1,288 @@
 @extends('layouts.app_pasien')
 
 @section('content')
+<style>
+    /* Global & Layout */
+    .content-wrapper { background-color: #f8fafc !important; }
+    .container-custom { padding: 0 5%; }
+    @media (max-width: 768px) { .container-custom { padding: 0 10px; } }
+
+    /* Card Styling */
+    .card-modern { border-radius: 16px; border: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); overflow: hidden; }
+    .card-modern .card-header { background: #fff; border-bottom: 1px solid #f1f5f9; padding: 1.25rem; }
+    
+    /* Calendar UI */
+    .calendar-table { table-layout: fixed; margin-bottom: 0; }
+    .calendar-table th { background: #f8fafc; text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; color: #64748b; padding: 12px 0; border: none !important; }
+    .calendar-table td { height: 110px; vertical-align: top !important; padding: 6px !important; border: 1px solid #f1f5f9 !important; position: relative; transition: 0.2s; }
+    .calendar-table td:hover:not(.empty-day) { background-color: #f8fafc; }
+    
+    .date-num { font-weight: 700; font-size: 13px; color: #1e293b; display: block; text-align: right; margin-bottom: 6px; }
+    .today { background-color: #fffbeb !important; border: 2px solid #fbbf24 !important; }
+    .empty-day { background-color: #fbfcfd !important; opacity: 0.6; }
+
+    /* Schedule Pills */
+    .sched-btn { 
+        width: 100%; border: none; border-radius: 8px; padding: 6px 8px; margin-bottom: 4px;
+        font-size: 10px; text-align: left; transition: 0.2s; cursor: pointer; color: #fff;
+        display: flex; flex-direction: column; line-height: 1.2;
+    }
+    .sched-btn:hover { filter: brightness(90%); transform: translateY(-1px); }
+    .sched-btn span { font-size: 9px; opacity: 0.8; margin-top: 2px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 2px; }
+
+    /* Status Colors */
+    .btn-available { background: #10b981; box-shadow: 0 2px 4px rgba(16,185,129,0.2); }
+    .btn-full { background: #ef4444; cursor: not-allowed; }
+    .btn-registered { background: #f59e0b; color: #fff; }
+    .btn-past { background: #cbd5e1; color: #64748b; cursor: not-allowed; }
+
+    /* Form Area */
+    .placeholder-state { border: 2px dashed #e2e8f0; border-radius: 16px; background: transparent; }
+    .selected-box { background: #eff6ff; border-radius: 12px; padding: 15px; border: 1px solid #bfdbfe; }
+
+    /* Custom Select2 Style */
+    .select2-container--default .select2-selection--single {
+        border-radius: 10px; border: 1px solid #d1d5db; height: 45px; padding: 8px;
+    }
+
+    /* Container kartu dokter agar sejajar horizontal */
+    .doctor-cards-container {
+        display: flex;
+        gap: 15px;
+        overflow-x: auto;
+        padding: 10px 0 20px 0;
+    }
+
+    /* Gaya dasar kartu dokter */
+    .doc-card {
+        min-width: 130px;
+        background: #fff;
+        border: 2px solid transparent; /* Border default transparan */
+        border-radius: 16px;
+        padding: 15px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* Efek hover */
+    .doc-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    /* Gaya saat kartu dipilih (Active) - Warna hijau sesuai tema Anda */
+    .doc-card.active {
+        border-color: #28a745;
+        background-color: #f8fff9;
+    }
+
+    /* Avatar bulat/kotak di dalam kartu */
+    .doc-avatar-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        background: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 10px;
+        font-size: 18px;
+        font-weight: bold;
+        color: #495057;
+    }
+
+    /* Warna avatar saat aktif */
+    .doc-card.active .doc-avatar-icon {
+        background-color: #28a745;
+        color: #fff;
+    }
+
+    .doc-meta-name { font-size: 12px; font-weight: 700; color: #333; margin-bottom: 2px; }
+    .doc-meta-spec { font-size: 10px; color: #777; }
+
+    .selected-box {
+    background: #f8f9fa; /* Warna abu sangat muda agar elemen putih di dalamnya kontras */
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid #e9ecef;
+    }
+</style>
+
 <div class="content-wrapper">
-    <section class="content pt-3">
-        <div class="container-fluid">
-            <div class="row">
-                {{-- KOLOM KIRI: PILIH DOKTER & JADWAL --}}
-                <div class="col-lg-8">
-                    <div class="card card-primary card-outline shadow-sm">
-                        <div class="card-header">
-                            <h3 class="card-title font-weight-bold text-dark"><i class="fas fa-user-md mr-1"></i> 1. Pilih Dokter</h3>
-                        </div>
-                        <div class="card-body">
-                            <select id="doctorSelect" class="form-control select2">
-                                <option value="">-- Cari Nama Dokter --</option>
-                                @foreach($doctors as $doctor)
-                                    <option value="{{ $doctor->id }}">dr. {{ $doctor->name }} ({{ $doctor->specialist ?? 'Umum' }})</option>
+    <div class="container-custom py-4">
+        <div class="row">
+            {{-- KOLOM KIRI: KALENDER --}}
+            <div class="col-lg-8">
+                <div class="card card-modern mb-4">
+                    <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+                        <h5 class="font-weight-bold mb-2 mb-md-0"><i class="fas fa-calendar-alt text-primary mr-2"></i>Pilih Jadwal Dokter</h5>
+                        <div class="d-flex align-items-center" style="gap: 10px;">
+                            <select id="filterMonth" class="form-control form-control-sm custom-select border-0 bg-light">
+                                @foreach(['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'] as $k => $m)
+                                    <option value="{{ $k }}" {{ date('n')-1 == $k ? 'selected' : '' }}>{{ $m }}</option>
                                 @endforeach
+                            </select>
+                            <select id="filterYear" class="form-control form-control-sm custom-select border-0 bg-light">
+                                @for($y = date('Y'); $y <= date('Y') + 1; $y++)
+                                    <option value="{{ $y }}">{{ $y }}</option>
+                                @endfor
                             </select>
                         </div>
                     </div>
-
-                    <div class="card card-success card-outline shadow-sm">
-                        <div class="card-header">
-                            <h3 class="card-title font-weight-bold text-dark"><i class="fas fa-calendar-alt mr-1"></i> 2. Pilih Jadwal</h3>
-                            <div class="card-tools">
-                                <div class="d-flex align-items-center" style="gap: 8px;">
-                                    <select id="filterMonth" class="form-control form-control-sm border-0 shadow-sm">
-                                        @foreach(['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'] as $key => $month)
-                                            <option value="{{ $key }}" {{ date('n')-1 == $key ? 'selected' : '' }}>{{ $month }}</option>
-                                        @endforeach
-                                    </select>
-                                    <select id="filterYear" class="form-control form-control-sm border-0 shadow-sm">
-                                        @for($y = date('Y'); $y <= date('Y') + 1; $y++)
-                                            <option value="{{ $y }}">{{ $y }}</option>
-                                        @endfor
-                                    </select>
+                    
+                    <div class="p-3 bg-white border-bottom">
+                        <label class="small font-weight-bold text-muted">PILIH DOKTER:</label>
+                        
+                        <div class="doctor-cards-container" id="doctorCardsArea">
+                            
+                            <div class="doc-card active p-3" data-id="">
+                                <div class="doc-avatar-icon">
+                                    <i class="fas fa-users"></i>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-bordered mb-0" id="customCalendar">
-                                    <thead class="bg-light text-center">
-                                        <tr>
-                                            <th style="width: 14.28%" class="text-danger">Min</th>
-                                            <th style="width: 14.28%">Sen</th>
-                                            <th style="width: 14.28%">Sel</th>
-                                            <th style="width: 14.28%">Rab</th>
-                                            <th style="width: 14.28%">Kam</th>
-                                            <th style="width: 14.28%">Jum</th>
-                                            <th style="width: 14.28%">Sab</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="calendarBody">
-                                        {{-- Diisi oleh JavaScript --}}
-                                    </tbody>
-                                </table>
+                                <div class="doc-meta-name">Semua</div>
+                                <div class="doc-meta-spec">Dokter</div>
                             </div>
 
-                            <div class="calendar-legend px-3 py-2 bg-light border-top d-flex flex-wrap" style="gap: 15px; font-size: 12px;">
-                                <div class="d-flex align-items-center"><span class="legend-box bg-success mr-1"></span> Tersedia</div>
-                                <div class="d-flex align-items-center"><span class="legend-box bg-danger mr-1"></span> Penuh</div>
-                                <div class="d-flex align-items-center"><span class="legend-box bg-warning mr-1"></span> Terdaftar</div>
-                                <div class="d-flex align-items-center"><span class="legend-box bg-past mr-1"></span> Selesai</div>
-                                <div class="d-flex align-items-center"><span class="legend-box border border-warning mr-1" style="background:#fff9e6"></span> Hari Ini</div>
+                            @foreach($doctors as $doctor)
+                            <div class="doc-card p-3" data-id="{{ $doctor->id }}">
+                                <div class="doc-avatar-icon">
+                                    {{ strtoupper(substr($doctor->name, 0, 2)) }}
+                                </div>
+                                <div class="doc-meta-name text-truncate">dr. {{ $doctor->name }}</div>
+                                <div class="doc-meta-spec">{{ $doctor->specialist ?? 'Umum' }}</div>
                             </div>
+                            @endforeach
                         </div>
+
+                        <input type="hidden" id="doctorSelect" value="">
                     </div>
-                </div>
 
-                {{-- KOLOM KANAN: DETAIL TINDAKAN --}}
-                <div class="col-lg-4">
-                    <div id="reservationForm" style="display:none;">
-                        <div class="card card-success card-outline shadow-sm border-top-3">
-                            <div class="card-header"><h3 class="card-title font-weight-bold">3. Detail Tindakan</h3></div>
-                            <form id="mainBookingForm" method="POST" action="{{ route('pasien.reservations.store') }}">
-                                @csrf
-                                <input type="hidden" name="doctor_schedule_id" id="doctor_schedule_id">
-                                <div class="card-body">
-                                    <div id="selectedScheduleInfo" class="mb-3"></div>
-                                    <div class="form-group">
-                                        <label>Keluhan / Keperluan Pemeriksaan</label>
-                                        <textarea name="action" class="form-control" rows="5" placeholder="Tuliskan keluhan Anda di sini..." required></textarea>
-                                        <small class="text-muted italic">*Admin akan memverifikasi reservasi Anda.</small>
-                                    </div>
-                                </div>
-                                <div class="card-footer bg-white">
-                                    <button type="submit" class="btn btn-success btn-block py-2 font-weight-bold shadow-sm">
-                                        KONFIRMASI RESERVASI
-                                    </button>
-                                </div>
-                            </form>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table calendar-table" id="customCalendar">
+                                <thead>
+                                    <tr class="text-center">
+                                        <th class="text-danger">Min</th><th>Sen</th><th>Sel</th><th>Rab</th><th>Kam</th><th>Jum</th><th>Sab</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="calendarBody"></tbody>
+                            </table>
                         </div>
                     </div>
 
-                    <div id="placeholder" class="card card-outline card-secondary border-dashed text-center py-5 shadow-sm">
-                        <div class="card-body">
-                            <i class="fas fa-calendar-check fa-3x text-muted mb-3"></i>
-                            <h5 class="text-dark font-weight-bold">Mulai Reservasi</h5>
-                            <p class="text-muted small">Pilih dokter dan klik pada tanggal yang tersedia di kalender.</p>
+                    <div class="card-footer bg-light p-3">
+                        <div class="d-flex flex-wrap" style="gap: 15px; font-size: 11px;">
+                            <div class="d-flex align-items-center"><span class="badge badge-success mr-1" style="width:10px;height:10px;border-radius:2px">&nbsp;</span> Tersedia</div>
+                            <div class="d-flex align-items-center"><span class="badge badge-danger mr-1" style="width:10px;height:10px;border-radius:2px">&nbsp;</span> Penuh</div>
+                            <div class="d-flex align-items-center"><span class="badge badge-warning mr-1" style="width:10px;height:10px;border-radius:2px">&nbsp;</span> Terdaftar</div>
+                            <div class="d-flex align-items-center"><span class="badge badge-secondary mr-1" style="width:10px;height:10px;border-radius:2px">&nbsp;</span> Lewat</div>
                         </div>
                     </div>
                 </div>
             </div>
+
+        {{-- KOLOM KANAN: FORM --}}
+        <div class="col-lg-4 pb-5"> {{-- Tambah pb-5 supaya gak mentok nav bawah --}}
+            <div id="reservationFormArea" style="display:none;">
+                <div class="card card-modern border-0 shadow-lg">
+                    <div class="card-header bg-success text-white py-3">
+                        <h6 class="font-weight-bold mb-0 text-center">Konfirmasi Kunjungan</h6>
+                    </div>
+                    <form id="mainBookingForm" method="POST" action="{{ url('/pasien/reservations') }}">
+                        @csrf
+                        <input type="hidden" name="doctor_schedule_id" id="doctor_schedule_id">
+                        <div class="card-body">
+                            <div id="selectedScheduleSummary" class="selected-box mb-4">
+                                {{-- JS akan mengisi ini dengan struktur yang lebih rapi --}}
+                            </div>
+                            
+                            <div class="form-group mb-4">
+                                <label class="font-weight-bold small text-muted mb-2">KELUHAN / TUJUAN KEDATANGAN</label>
+                                <textarea name="action" class="form-control" rows="5" 
+                                    placeholder="Tuliskan keluhan Anda di sini..." 
+                                    required style="border-radius: 12px; border: 1.5px solid #e2e8f0; resize: none;"></textarea>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-white border-0 pb-4">
+                            <button type="submit" class="btn btn-success btn-block py-3 font-weight-bold shadow-sm" style="border-radius:12px; letter-spacing: 0.5px;">
+                                RESERVASI SEKARANG
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="formPlaceholder" class="placeholder-state text-center py-5 px-3 mb-5">
+                <img src="https://cdn-icons-png.flaticon.com/512/2693/2693507.png" width="80" style="opacity: 0.2;" class="mb-3">
+                <h6 class="font-weight-bold text-muted">Belum Ada Jadwal</h6>
+                <p class="text-muted small">Silakan pilih dokter dan klik jam praktek pada kalender.</p>
+            </div>
         </div>
-    </section>
+        </div>
+    </div>
 </div>
-
-<style>
-    table#customCalendar tbody td { height: 110px; vertical-align: top; padding: 6px; background: #fff; border: 1px solid #eee; }
-    .date-number { font-weight: bold; color: #444; display: block; text-align: right; font-size: 14px; margin-bottom: 4px; }
-    
-    /* Tombol Jadwal Base */
-    .schedule-item { 
-        display: block; width: 100%; border: none; border-radius: 4px; padding: 4px 6px; 
-        font-size: 11px; margin-bottom: 4px; text-align: left; transition: 0.2s; cursor: pointer; color: #fff;
-    }
-    .schedule-item:hover { opacity: 0.8; transform: translateY(-1px); }
-    
-    /* Status Warna */
-    .bg-success { background-color: #28a745 !important; }
-    .bg-danger { background-color: #dc3545 !important; }
-    .bg-warning { background-color: #ffc107 !important; color: #212529 !important; }
-    .bg-past { background-color: #e9ecef !important; color: #6c757d !important; cursor: not-allowed !important; border: 1px dashed #ced4da; }
-    
-    .slot-info { display: block; font-size: 9px; opacity: 0.9; border-top: 1px solid rgba(255,255,255,0.3); margin-top: 2px; }
-    .bg-past .slot-info { border-top: 1px solid #ced4da; }
-
-    td.today { background-color: #fff9e6 !important; border: 2px solid #ffc107 !important; }
-    td.empty-day { background-color: #fafafa !important; }
-    td.empty-day .date-number { color: #ccc; }
-
-    .legend-box { width: 12px; height: 12px; border-radius: 2px; display: inline-block; }
-    .border-dashed { border: 2px dashed #ddd !important; background: transparent; }
-</style>
 @endsection
 
 @section('scripts')
-{{-- SweetAlert2 CDN --}}
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const doctorSelect = document.getElementById('doctorSelect');
+$(document).ready(function() {
     const calendarBody = document.getElementById('calendarBody');
     const filterMonth = document.getElementById('filterMonth');
     const filterYear = document.getElementById('filterYear');
     const scheduleInput = document.getElementById('doctor_schedule_id');
-    const reservationForm = document.getElementById('reservationForm');
-    const placeholder = document.getElementById('placeholder');
-    const summaryInfo = document.getElementById('selectedScheduleInfo');
+    const formArea = document.getElementById('reservationFormArea');
+    const placeholder = document.getElementById('formPlaceholder');
+    const summaryBox = document.getElementById('selectedScheduleSummary');
+    const hiddenDocInput = $('#doctorSelect');
 
+    // 1. FUNGSI RENDER KALENDER (Tetap Seperti Punya Anda)
     function renderCalendar(month, year, schedules) {
         calendarBody.innerHTML = '';
-        month = parseInt(month);
-        year = parseInt(year);
-
+        month = parseInt(month); year = parseInt(year);
         let firstDay = new Date(year, month).getDay();
         let daysInMonth = 32 - new Date(year, month, 32).getDate();
         let date = 1;
-        let todayDate = new Date();
-        todayDate.setHours(0,0,0,0);
+        let today = new Date(); today.setHours(0,0,0,0);
 
         for (let i = 0; i < 6; i++) {
             let row = document.createElement('tr');
             for (let j = 0; j < 7; j++) {
                 let cell = document.createElement('td');
-                
                 if (i === 0 && j < firstDay) {
                     cell.classList.add('empty-day');
                 } else if (date > daysInMonth) {
                     cell.classList.add('empty-day');
                 } else {
-                    let fMonth = String(month + 1).padStart(2, '0');
-                    let fDay = String(date).padStart(2, '0');
-                    let fullDateStr = `${year}-${fMonth}-${fDay}`;
-                    let currentDateObj = new Date(year, month, date);
+                    let curDate = new Date(year, month, date);
+                    let dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(date).padStart(2,'0')}`;
+                    cell.innerHTML = `<span class="date-num">${date}</span>`;
+                    if (curDate.getTime() === today.getTime()) cell.classList.add('today');
 
-                    cell.innerHTML = `<span class="date-number">${date}</span>`;
-                    
-                    // Highlight Hari Ini
-                    if (currentDateObj.getTime() === todayDate.getTime()) {
-                        cell.classList.add('today');
-                    }
-
-                    let daySchedules = schedules.filter(s => s.start === fullDateStr);
-
-                    if (doctorSelect.value !== "" && daySchedules.length === 0) {
-                        cell.classList.add('empty-day');
-                    }
-
-                    daySchedules.forEach(sched => {
+                    let daySchedules = schedules.filter(s => s.start === dateStr);
+                    daySchedules.forEach(s => {
+                        let isPast = curDate < today;
+                        let hasReg = s.extendedProps.has_registered;
+                        let remains = s.extendedProps.remaining;
                         let btn = document.createElement('button');
-                        let remaining = sched.extendedProps.remaining ?? 0;
-                        let isFull = remaining <= 0;
-                        let hasRegistered = sched.extendedProps.has_registered ?? false;
-                        let isPast = currentDateObj < todayDate;
-
                         btn.type = "button";
-                        
+
                         if (isPast) {
-                            btn.className = "schedule-item bg-past";
-                            btn.innerHTML = `<strong><i class="fas fa-check-circle"></i> Selesai</strong><span class="slot-info">Sudah lewat</span>`;
-                            btn.disabled = true;
-                        } else if (hasRegistered) {
-                            btn.className = "schedule-item bg-warning shadow-sm";
-                            btn.innerHTML = `<strong><i class="fas fa-exclamation-circle"></i> Terdaftar</strong><span class="slot-info">Anda sudah terdaftar</span>`;
-                            btn.onclick = () => Swal.fire('Sudah Terdaftar', 'Anda sudah mendaftar untuk jadwal ini. Cek menu Reservasi Saya.', 'info');
+                            btn.className = "sched-btn btn-past";
+                            btn.innerHTML = `<b>Selesai</b><span>Sudah Lewat</span>`;
+                        } else if (hasReg) {
+                            btn.className = "sched-btn btn-registered";
+                            btn.innerHTML = `<b>Terdaftar</b><span>Sudah Terpilih</span>`;
+                            btn.onclick = () => Swal.fire('Info', 'Anda sudah mendaftar di jadwal ini.', 'info');
+                        } else if (remains <= 0) {
+                            btn.className = "sched-btn btn-full";
+                            btn.innerHTML = `<b>Penuh</b><span>Kuota Habis</span>`;
                         } else {
-                            btn.className = isFull ? "schedule-item bg-danger" : "schedule-item bg-success shadow-sm";
-                            btn.innerHTML = `<strong><i class="far fa-clock"></i> ${sched.title}</strong><span class="slot-info">Sisa ${remaining} Slot</span>`;
-                            
-                            if (!isFull) {
-                                btn.onclick = () => selectSchedule(sched);
-                            } else {
-                                btn.onclick = () => Swal.fire('Kuota Penuh', 'Maaf, kuota untuk jadwal ini sudah habis.', 'error');
-                            }
+                            btn.className = "sched-btn btn-available";
+                            btn.innerHTML = `<b>${s.title}</b><span>Sisa ${remains} Slot</span>`;
+                            btn.onclick = () => selectSched(s);
                         }
                         cell.appendChild(btn);
                     });
@@ -229,52 +295,90 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function loadDoctorSchedules(doctorId) {
-        if (!doctorId) { renderCalendar(filterMonth.value, filterYear.value, []); return; }
+    // 2. FUNGSI FETCH DATA (Disesuaikan agar bisa dipanggil kartu)
+    window.fetchSchedules = function() {
+        let docId = hiddenDocInput.val();
+        // Jika belum pilih dokter, tampilkan kalender kosong (Permintaan Anda)
+        if (!docId) { 
+            renderCalendar(filterMonth.value, filterYear.value, []); 
+            return; 
+        }
+
+        calendarBody.innerHTML = '<tr><td colspan="7" class="text-center py-5"><div class="spinner-border text-primary"></div></td></tr>';
         
-        calendarBody.innerHTML = '<tr><td colspan="7" class="text-center py-5"><i class="fas fa-sync fa-spin fa-2x text-primary"></i><br>Mencari jadwal...</td></tr>';
-
-        const url = "{{ route('pasien.reservations.calendar', ':id') }}".replace(':id', doctorId);
-        fetch(url).then(res => res.json()).then(data => {
-            renderCalendar(filterMonth.value, filterYear.value, data);
-        }).catch(() => {
-            calendarBody.innerHTML = '<tr><td colspan="7" class="text-center text-danger py-5">Gagal memuat data.</td></tr>';
-        });
+        fetch(`{{ url('/pasien/reservations/calendar') }}/${docId}`)
+            .then(r => r.json())
+            .then(data => renderCalendar(filterMonth.value, filterYear.value, data))
+            .catch(() => { 
+                calendarBody.innerHTML = '<tr><td colspan="7" class="text-center text-danger py-4">Gagal memuat jadwal.</td></tr>'; 
+            });
     }
 
-    function selectSchedule(sched) {
-        scheduleInput.value = sched.id;
-        summaryInfo.innerHTML = `
-            <div class="alert alert-info border-0 shadow-sm small mb-0">
-                <i class="fas fa-calendar-check mr-1"></i> <strong>Jadwal Terpilih:</strong><br>
-                dr. ${sched.extendedProps.doctor_name}<br>
-                ${sched.extendedProps.date_formatted} (${sched.title})
-            </div>`;
+        // 3. FUNGSI PILIH JADWAL
+        function selectSched(s) {
+        scheduleInput.value = s.id;
+        
+        summaryBox.innerHTML = `
+            <div class="d-flex align-items-center mb-3">
+                <div class="mr-3 d-flex align-items-center justify-content-center bg-white shadow-sm" 
+                    style="width: 45px; height: 45px; border-radius: 12px; color: #007bff;">
+                    <i class="fas fa-user-md fa-lg"></i>
+                </div>
+                <div>
+                    <p class="mb-0 text-muted small uppercase font-weight-bold" style="letter-spacing: 0.5px;">DOKTER</p>
+                    <h6 class="font-weight-bold text-dark mb-0">dr. ${s.extendedProps.doctor_name}</h6>
+                </div>
+            </div>
+            
+            <div class="row no-gutters bg-white p-3 shadow-sm" style="border-radius: 12px; border-left: 4px solid #007bff;">
+                <div class="col-6 border-right">
+                    <p class="mb-1 text-muted small"><i class="far fa-calendar-alt mr-1"></i> TANGGAL</p>
+                    <p class="mb-0 font-weight-bold" style="font-size: 13px;">${s.extendedProps.date_formatted}</p>
+                </div>
+                <div class="col-6 pl-3">
+                    <p class="mb-1 text-muted small"><i class="far fa-clock mr-1"></i> JAM</p>
+                    <p class="mb-0 font-weight-bold text-primary" style="font-size: 13px;">${s.title} WIB</p>
+                </div>
+            </div>
+        `;
+
         placeholder.style.display = 'none';
-        reservationForm.style.display = 'block';
-        if(window.innerWidth < 992) reservationForm.scrollIntoView({ behavior: 'smooth' });
+        formArea.style.display = 'block';
+        
+        if(window.innerWidth < 992) {
+            formArea.scrollIntoView({ behavior: 'smooth' });
+        }
     }
 
-    doctorSelect.addEventListener('change', function() { loadDoctorSchedules(this.value); });
-    filterMonth.addEventListener('change', function() { loadDoctorSchedules(doctorSelect.value); });
-    filterYear.addEventListener('change', function() { loadDoctorSchedules(doctorSelect.value); });
+    // 4. LOGIKA KLIK KARTU DOKTER
+    $('.doc-card').click(function() {
+        $('.doc-card').removeClass('active');
+        $(this).addClass('active');
+        
+        var doctorId = $(this).attr('data-id');
+        hiddenDocInput.val(doctorId);
+        
+        fetchSchedules(); // Panggil fungsi fetch
+    });
 
-    // Submit Konfirmasi
+    // 5. EVENT LISTENER LAINNYA
+    filterMonth.addEventListener('change', fetchSchedules);
+    filterYear.addEventListener('change', fetchSchedules);
+
     document.getElementById('mainBookingForm').onsubmit = function(e) {
         e.preventDefault();
         Swal.fire({
-            title: 'Konfirmasi Reservasi?',
-            text: "Pastikan jadwal sudah benar sebelum mendaftar.",
+            title: 'Konfirmasi?',
+            text: "Daftar untuk jadwal yang dipilih?",
             icon: 'question',
             showCancelButton: true,
-            confirmButtonColor: '#28a745',
             confirmButtonText: 'Ya, Daftar!',
             cancelButtonText: 'Batal'
-        }).then((res) => { if(res.isConfirmed) this.submit(); });
+        }).then(res => { if(res.isConfirmed) this.submit(); });
     };
 
-    if(doctorSelect.value) loadDoctorSchedules(doctorSelect.value);
-    else renderCalendar(filterMonth.value, filterYear.value, []);
+    // Jalankan pertama kali (Kalender tampil tapi kosong jadwal)
+    fetchSchedules();
 });
 </script>
 @endsection
