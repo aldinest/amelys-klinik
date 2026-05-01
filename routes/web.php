@@ -67,10 +67,6 @@ Route::middleware(['auth', 'role:admin'])
 
         //Data Pasien
         Route::resource('patients', AdminPatient::class);
-        Route::post('/patients/{patient}/create-account',
-            [AdminPatient::class, 'createAccount']
-            )->name('patients.create-account');
-
 
         //Data User
         Route::resource('users', UserController::class);

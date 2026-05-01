@@ -14,59 +14,96 @@
         body.login-page {
             background-color: #f4f6f9;
             height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .login-card-body {
-            border-radius: 10px;
-            padding: 2rem !important;
+        .login-box {
+            width: 400px; /* Lebar lebih proporsional untuk desktop */
+        }
+        @media (max-width: 576px) {
+            .login-box {
+                width: 90%; /* Responsif di HP */
+            }
         }
         .card {
-            border-top: 5px solid #007bff; /* Biru AdminLTE sesuai gambar lo */
-            border-radius: 10px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+            border-top: 5px solid #007bff;
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
+            border-left: none;
+            border-right: none;
+            border-bottom: none;
+        }
+        .login-card-body {
+            border-radius: 12px;
+            padding: 2.5rem 2rem !important;
+        }
+        .form-control {
+            height: 50px; /* Sedikit lebih besar agar nyaman di mobile */
+            border-radius: 8px;
+        }
+        .input-group-text {
+            border-radius: 0 8px 8px 0 !important;
+            background-color: #f8f9fa;
+        }
+        .input-group > .form-control {
+            border-radius: 8px 0 0 8px !important;
         }
         .btn-primary {
             background-color: #007bff !important;
-            border-color: #007bff !important;
-            height: 45px;
-            font-weight: 600;
+            height: 50px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
         }
-        .form-control {
-            height: 45px;
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,123,255,0.3);
         }
-        .form-control:focus {
-            border-color: #007bff;
-        }
-        .login-logo img {
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        .custom-control-label {
+            cursor: pointer;
+            padding-top: 2px;
         }
     </style>
 </head>
 <body class="hold-transition login-page">
 <div class="login-box">
-    <div class="login-logo mb-4">
+    <div class="login-logo mb-4 text-center">
         <a href="{{ url('/') }}">
-            <img src="{{ asset('dist/img/logoamelys.png') }}" alt="Logo" style="height: 80px;"><br>
-            <span style="font-weight: 700; color: #333;">AMELYS</span> <span style="font-weight: 300; color: #666;">KLINIK</span>
+            <img src="{{ asset('dist/img/logoamelys.png') }}" alt="Logo" style="height: 70px;" class="mb-2"><br>
+            <span style="font-weight: 700; color: #333; font-size: 24px;">AMELYS</span> 
+            <span style="font-weight: 300; color: #666; font-size: 24px;">KLINIK</span>
         </a>
     </div>
     
     <div class="card">
         <div class="card-body login-card-body">
-            <p class="login-box-msg text-bold">Silakan Login untuk Reservasi</p>
+            <h5 class="text-center text-bold mb-4">Login Reservasi</h5>
 
-            @if (session('status'))
-                <div class="alert alert-success mb-3" role="alert">
-                    {{ session('status') }}
+            @if ($errors->has('email') || $errors->has('password'))
+                <div class="alert alert-danger alert-dismissible fade show mb-3" role="alert">
+                    <i class="icon fas fa-exclamation-circle mr-2"></i>
+                    <strong>Login Gagal!</strong><br>
+                    <span class="small">Email atau password yang Anda masukkan salah.</span>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
             @endif
 
+            @if (session('status'))
+                <div class="alert alert-success mb-3 small" role="alert">
+                    {{ session('status') }}
+                </div>
+            @endif
             <form method="POST" action="{{ route('login') }}">
                 @csrf
 
                 <div class="form-group mb-3">
-                    <label class="small text-muted">Email</label>
+                    <label class="small text-muted font-weight-bold">Email</label>
                     <div class="input-group">
-                        <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" placeholder="Masukkan email..." value="{{ old('email') }}" required autofocus>
+                        <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" placeholder="nama@email.com" value="{{ old('email') }}" required autofocus>
                         <div class="input-group-append">
                             <div class="input-group-text">
                                 <span class="fas fa-envelope text-primary"></span>
@@ -74,50 +111,44 @@
                         </div>
                     </div>
                     @error('email')
-                        <span class="text-danger small">{{ $message }}</span>
+                        <span class="text-danger mt-1 d-block small">{{ $message }}</span>
                     @enderror
                 </div>
 
-                <div class="form-group mb-3">
-                    <label class="small text-muted">Password</label>
+                <div class="form-group mb-4">
+                    <label class="small text-muted font-weight-bold">Password</label>
                     <div class="input-group">
-                        <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" placeholder="Masukkan password..." required>
-                        <div class="input-group-append">
+                        <input type="password" name="password" id="password" class="form-control @error('password') is-invalid @enderror" placeholder="••••••••" required>
+                        <div class="input-group-append" style="cursor: pointer;" id="togglePassword">
                             <div class="input-group-text">
-                                <span class="fas fa-lock text-primary"></span>
+                                <span class="fas fa-eye text-primary" id="eyeIcon"></span>
                             </div>
                         </div>
                     </div>
                     @error('password')
-                        <span class="text-danger small">{{ $message }}</span>
+                        <span class="text-danger mt-1 d-block small">{{ $message }}</span>
                     @enderror
                 </div>
 
-                <div class="row mt-4">
-                    <div class="col-8">
-                        <div class="icheck-primary">
-                            <input type="checkbox" id="remember" name="remember">
-                            <label for="remember" style="font-weight: 400; cursor: pointer;">
-                                Ingat Saya
-                            </label>
-                        </div>
+                <!-- Bagian Checkbox & Lupa Password -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="custom-control custom-checkbox">
+                        <input type="checkbox" class="custom-control-input" id="remember" name="remember">
+                        <label class="custom-control-label small text-muted" for="remember">Ingat Saya</label>
                     </div>
-                    <div class="col-4">
-                        <button type="submit" class="btn btn-primary btn-block">MASUK</button>
-                    </div>
+                    @if (Route::has('password.request'))
+                        <a href="{{ route('password.request') }}" class="small text-primary font-weight-bold">Lupa Password?</a>
+                    @endif
                 </div>
+
+                <!-- Tombol Masuk Full Width -->
+                <button type="submit" class="btn btn-primary btn-block shadow-sm">MASUK KE AKUN</button>
             </form>
 
             <div class="text-center mt-4">
-                <hr>
-                @if (Route::has('password.request'))
-                    <p class="mb-1">
-                        <a href="{{ route('password.request') }}" class="text-primary small">Lupa Password?</a>
-                    </p>
-                @endif
-                <p class="mb-0">
-                    <span class="small">Belum punya akun?</span>
-                    <a href="https://wa.me/6282335483854" class="text-primary text-bold small"> Hubungi CS Klinik Sekarang</a>
+                <p class="mb-0 small text-muted">
+                    Belum punya akun? 
+                    <a href="https://wa.me/6282335483854" class="text-primary font-weight-bold">Hubungi CS Kami</a>
                 </p>
             </div>
         </div>
@@ -127,5 +158,16 @@
 <script src="{{ asset('plugins/jquery/jquery.min.js') }}"></script>
 <script src="{{ asset('plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 <script src="{{ asset('dist/js/adminlte.min.js') }}"></script>
+<script>
+    $(document).ready(function() {
+        $("#togglePassword").click(function() {
+            const passwordField = $("#password");
+            const eyeIcon = $("#eyeIcon");
+            const type = passwordField.attr("type") === "password" ? "text" : "password";
+            passwordField.attr("type", type);
+            eyeIcon.toggleClass("fa-eye fa-eye-slash");
+        });
+    });
+</script>
 </body>
 </html>

@@ -114,50 +114,30 @@
                 </h3>
             </div>
 
-            <div class="card-body">
+          <div class="card-body">
                 @if(!$patient->user_id)
-                    <div class="callout callout-warning border-left shadow-sm py-2 mb-4">
-                        <p class="small mb-0 text-muted">
-                            <i class="fas fa-info-circle mr-1 text-warning"></i> 
-                            Pasien ini belum memiliki akun aplikasi. Masukkan email untuk aktivasi akun.
-                        </p>
-                    </div>
-
-                    <form action="{{ route('admin.patients.create-account', $patient->id) }}" method="POST">
-                        @csrf
-                        <div class="row">
-                            <div class="col-md-8">
-                                <label class="small font-weight-bold text-muted text-uppercase">Email Akun Pasien</label>
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text bg-white border-right-0">
-                                            <i class="fas fa-envelope text-info"></i>
-                                        </span>
-                                    </div>
-                                    <input type="email" name="email" class="form-control border-left-0" placeholder="pasien@email.com" style="height: 46px;" required>
-                                    <div class="input-group-append">
-                                        <button type="submit" class="btn btn-success font-weight-bold px-4 shadow-sm" style="height: 46px;">
-                                            <i class="fas fa-user-plus mr-2"></i> Buat Akun
-                                        </button>
-                                    </div>
-                                </div>
-                                <p class="small text-muted italic mt-2 ml-1">
-                                    <i class="fas fa-key mr-1"></i> Password default: <strong class="text-danger">nama depan + tgl lahir</strong> 
-                                    <span class="text-secondary">(Contoh: budi12051995)</span>
-                                </p>
+                    {{-- TAMPILAN JIKA PASIEN BELUM PUNYA AKUN --}}
+                    <div class="py-2">
+                        <div class="d-inline-flex align-items-center p-3 border rounded bg-light shadow-none" style="width: 100%; max-width: 600px;">
+                            <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center mr-3 shadow-sm" style="min-width: 45px; height: 45px;">
+                                <i class="fas fa-user-slash fa-lg"></i>
+                            </div>
+                            <div class="text-left">
+                                <h6 class="font-weight-bold mb-0 text-muted">Akun Belum Aktif</h6>
+                                <small class="text-muted">Pasien ini belum memiliki akun login. Akun otomatis dibuat saat pendaftaran pasien baru.</small>
                             </div>
                         </div>
-                    </form>
+                    </div>
                 @else
+                    {{-- TAMPILAN JIKA AKUN SUDAH AKTIF --}}
                     <div class="py-2">
-                        <div class="d-inline-flex align-items-center p-3 border rounded bg-light shadow-none">
-                            <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center mr-3 shadow-sm" style="width: 45px; height: 45px;">
+                        <div class="d-inline-flex align-items-center p-3 border rounded bg-light shadow-none" style="width: 100%; max-width: 600px;">
+                            <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center mr-3 shadow-sm" style="min-width: 45px; height: 45px;">
                                 <i class="fas fa-check fa-lg"></i>
                             </div>
                             <div class="text-left">
                                 <h6 class="font-weight-bold mb-0 text-success">Akun Pasien Aktif</h6>
-                                {{-- Menampilkan email yang terdaftar --}}
-                                <div class="text-dark font-weight-bold mt-1">{{ $patient->user->email ?? '-' }}</div>
+                                <div class="text-dark font-weight-bold mt-1" style="font-size: 1.1rem;">{{ $patient->user->email ?? '-' }}</div>
                                 <small class="text-muted">Pasien sudah bisa menggunakan email ini untuk masuk ke aplikasi Amelys Klinik.</small>
                             </div>
                         </div>
