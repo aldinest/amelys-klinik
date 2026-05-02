@@ -101,7 +101,7 @@
                                     <td>{{ $row->complaint }}</td>
                                     <td class="text-danger font-weight-bold">{{ $row->diagnosis ?? '-' }}</td>
                                     <td class="text-success font-weight-bold">{{ $row->treatment ?? '-' }}</td>
-                                    <td class="small text-muted">{{ $row->notes ?? '-' }}</td>
+                                    <td class="small text-muted">{{ $row->doctor_notes ?? '-' }}</td>
                                 </tr>
                                 @empty
                                 <tr>
