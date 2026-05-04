@@ -70,15 +70,15 @@
                                         <i class="far fa-calendar-alt mr-1"></i>
                                         {{ \Carbon\Carbon::parse($record->examined_at)->translatedFormat('d M Y') }}
                                     </span>
-                                    <small class="text-muted font-weight-bold">{{ \Carbon\Carbon::parse($record->examined_at)->format('H:i') }} WIB</small>
+                                    <!-- <small class="text-muted font-weight-bold">{{ \Carbon\Carbon::parse($record->examined_at)->format('H:i') }} WIB</small> -->
                                 </div>
 
-                                <div class="bg-light rounded p-3 mb-3 border-0">
+                                <!-- <div class="bg-light rounded p-3 mb-3 border-0">
                                     <label class="text-xs text-muted text-uppercase font-weight-bold mb-1 d-block" style="font-size: 0.65rem; letter-spacing: 0.5px;">Diagnosa Utama</label>
                                     <h6 class="font-weight-bold text-dark mb-0">
                                         <i class="fas fa-notes-medical mr-2 text-danger"></i>{{ $record->diagnosis }}
                                     </h6>
-                                </div>
+                                </div> -->
 
                                 <div class="small px-1">
                                     <div class="d-flex justify-content-between mb-2">
@@ -92,13 +92,13 @@
                                 </div>
                             </div>
 
-                            <div class="card-footer bg-white border-top-0 pt-0 pb-3 px-3">
+                            <!-- <div class="card-footer bg-white border-top-0 pt-0 pb-3 px-3">
                                 <a href="{{ route('pasien.medical-records.show', $record->id) }}" 
                                 class="btn btn-outline-info btn-sm btn-block font-weight-bold py-2 shadow-none"
                                 style="border-radius: 8px; border-width: 1.5px;">
                                     Detail Rekam Medis <i class="fas fa-chevron-right ml-1 small"></i>
                                 </a>
-                            </div>
+                            </div> -->
                         </div>
                     </div>
                 @empty
