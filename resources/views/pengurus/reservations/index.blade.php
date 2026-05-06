@@ -124,7 +124,10 @@
                                             <span class="text-primary small font-weight-bold">{{ strtoupper($schedule->doctor->specialist) }}</span>
                                         </td>
                                         <td class="align-middle">
-                                            <div class="font-weight-bold"><i class="far fa-calendar-alt mr-1 text-muted"></i> {{ \Carbon\Carbon::parse($schedule->schedule_date)->translatedFormat('d F Y') }}</div>
+                                            <div class="font-weight-bold">
+                                                <i class="far fa-calendar-alt mr-1 text-muted"></i> 
+                                                {{ \Carbon\Carbon::parse($schedule->schedule_date)->locale('id')->translatedFormat('l, d F Y') }}
+                                            </div>
                                             <div class="small text-muted"><i class="far fa-clock mr-1"></i> {{ $schedule->start_time }} - {{ $schedule->end_time }}</div>
                                         </td>
                                         <td class="text-center align-middle">

@@ -53,7 +53,7 @@ class MedicalRecordController extends Controller
         abort_if(!$reservationId, 404);
 
         $reservation = Reservation::with([
-                'patient',
+                'patient.medicalRecords.doctor', // Ambil history RM pasien beserta nama dokternya
                 'doctorSchedule.doctor',
                 'medicalRecord'
             ])
@@ -61,10 +61,11 @@ class MedicalRecordController extends Controller
             ->where('status', 'approved')
             ->firstOrFail();
 
+        // Proteksi: Jika RM untuk reservasi ini sudah ada, tendang balik ke 'show'
         if ($reservation->medicalRecord) {
             return redirect()
                 ->route('pengurus.reservations.show', $reservation->doctor_schedule_id)
-                ->with('error', 'Rekam medis pasien ini sudah ada');
+                ->with('error', 'Rekam medis untuk kunjungan ini sudah ada.');
         }
 
         return view('pengurus.medical-records.create', compact('reservation'));
@@ -121,7 +122,7 @@ class MedicalRecordController extends Controller
         $reservation->update(['status' => 'completed']);
 
         return redirect()
-            ->route('pengurus.medical-records.index')
+            ->route('pengurus.reservations.show', $reservation->doctor_schedule_id)
             ->with('success', 'Rekam medis berhasil disimpan');
     }
 

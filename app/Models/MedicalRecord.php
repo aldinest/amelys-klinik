@@ -20,6 +20,11 @@ class MedicalRecord extends Model
         'doctor_notes',
     ];
 
+    // UNTUK MEMPERBAIKI ERROR FORMAT()
+    protected $casts = [
+        'examined_at' => 'datetime',
+    ];
+
     /**
      * One medical record belongs to one patient
      */
