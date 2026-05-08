@@ -30,6 +30,9 @@
         {{-- Navigasi Tambahan Desktop Khusus Pasien (Horizontal Menu) --}}
         @if(auth()->user()->role === 'pasien')
         <li class="nav-item d-none d-md-inline-block">
+            <a href="{{ url('/pasien/profile') }}" class="nav-link">Profil Saya</a>
+        </li>
+        <li class="nav-item d-none d-md-inline-block">
             <a href="{{ url('/pasien/reservations') }}" class="nav-link">Reservasi</a>
         </li>
         <li class="nav-item d-none d-md-inline-block">
@@ -57,12 +60,16 @@
                 </x-slot>
 
                 <x-slot name="content">
-                    <x-dropdown-link :href="route('profile.edit')">
-                        <i class="fas fa-user-edit mr-2 text-muted"></i> {{ __('Profile') }}
-                    </x-dropdown-link>
+                    {{-- Sembunyikan link profil bawaan jika role adalah pasien --}}
+                    @if(auth()->user()->role !== 'pasien')
+                        <x-dropdown-link :href="route('profile.edit')">
+                            <i class="fas fa-user-edit mr-2 text-muted"></i> {{ __('Profile') }}
+                        </x-dropdown-link>
+                        
+                        <div class="dropdown-divider"></div>
+                    @endif
 
-                    <div class="dropdown-divider"></div>
-
+                    {{-- Link Logout tetap muncul untuk semua role --}}
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <x-dropdown-link :href="route('logout')"
