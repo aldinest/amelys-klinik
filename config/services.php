@@ -14,6 +14,11 @@ return [
     |
     */
 
+    'onesignal' => [
+    'app_id' => env('ONESIGNAL_APP_ID'),
+    'rest_api_key' => env('ONESIGNAL_REST_API_KEY'),
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],

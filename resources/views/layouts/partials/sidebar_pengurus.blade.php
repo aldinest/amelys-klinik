@@ -64,6 +64,15 @@
               </p>
             </a>
           </li>
+
+          <li class="nav-item">
+            <a href="{{ route('pengurus.report.index') }}" class="nav-link {{ request()->routeIs('pengurus.report.*') ? 'active' : '' }}">
+              <i class="nav-icon fas fa-chart-bar"></i>
+              <p>
+                History Rekap
+              </p>
+            </a>
+          </li>
           
       </nav>
       <!-- /.sidebar-menu -->

@@ -16,6 +16,10 @@ class Patient extends Model
         'user_id',
     ];
 
+    protected $casts = [
+    'date_of_birth' => 'date',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);

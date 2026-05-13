@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Http;
 
 // =========================================================
 // CONTROLLERS IMPORT
@@ -25,6 +26,7 @@ use App\Http\Controllers\Pengurus\PatientController as PengurusPatient;
 use App\Http\Controllers\Pengurus\DoctorScheduleController;
 use App\Http\Controllers\Pengurus\ReservationController as PengurusReservation;
 use App\Http\Controllers\Pengurus\MedicalRecordController;
+use App\Http\Controllers\Pengurus\ReportController;
 
 // --- Pasien Controllers ---
 use App\Http\Controllers\Pasien\PatientDashboardController;
@@ -43,6 +45,7 @@ use App\Http\Controllers\Pasien\ProfileController as PasienProfile;
 Route::prefix('/')->group(function () {
     Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
 });
+
 
 /**
  * ROLE: ADMIN
@@ -97,6 +100,10 @@ Route::middleware(['auth', 'role:pengurus'])
         Route::get('/patients/export', [PengurusPatient::class, 'export'])->name('patients.export');
         Route::get('/patients/pdf', [PengurusPatient::class, 'pdf'])->name('patients.pdf');
         Route::get('/patients/{patient}', [PengurusPatient::class, 'show'])->name('patients.show');
+
+        Route::get('/report/pdf', [ReportController::class, 'exportPdf'])->name('report.pdf');
+        Route::get('/report/export-pdf/{month}/{year}', [ReportController::class, 'exportMonthlyPdf'])->name('report.export_monthly_pdf');
+        Route::get('/report/excel', [ReportController::class, 'exportExcel'])->name('report.excel');
         
         // Export Reservasi
         Route::get('/reservations/export-pdf/{schedule_id}', [PengurusReservation::class, 'exportPdf'])->name('reservations.export-pdf');
@@ -106,6 +113,9 @@ Route::middleware(['auth', 'role:pengurus'])
         Route::resource('doctor_schedules', DoctorScheduleController::class);
         Route::resource('reservations', PengurusReservation::class);
         Route::delete('/reservations/{reservation}/cancel', [PengurusReservation::class, 'cancel'])->name('reservations.cancel');
+
+        // Rekap History
+        Route::get('/report', [ReportController::class, 'index'])->name('report.index');
 
         // Rekam Medis (Akses Terbatas)
         Route::resource('medical-records', MedicalRecordController::class)->only(['index', 'create', 'store', 'show']);
@@ -159,6 +169,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+Route::get('/test-notif', function () {
+    $response = Http::withHeaders([
+        'Authorization' => 'Basic ' . config('services.onesignal.rest_api_key'),
+        'Content-Type' => 'application/json',
+    ])->post('https://onesignal.com/api/v1/notifications', [
+        'app_id' => config('services.onesignal.app_id'),
+        'included_segments' => ['All'],
+        'headings' => ['en' => 'Tes Notif Amelys Klinik'],
+        'contents' => ['en' => 'Halo bre! Notifikasi Desktop sudah jalan!'],
+    ]);
+
+    return $response->json();
 });
 
 // Load Auth Routes
