@@ -131,15 +131,59 @@ class MedicalRecordController extends Controller
      */
     public function show(MedicalRecord $medicalRecord)
     {
-        // Load riwayat rekam medis lainnya untuk pasien yang sama jika diperlukan di view show
+        // 1. Load relasi utama agar informasi pasien dan dokter muncul di header
         $medicalRecord->load(['reservation.patient', 'reservation.doctorSchedule.doctor']);
         
-        // Ambil semua history pasien tersebut untuk ditampilkan di halaman detail
+        // 2. Ambil history pasien yang hanya ditangani oleh DOKTER TERSEBUT
         $history = MedicalRecord::where('patient_id', $medicalRecord->patient_id)
+                    ->whereHas('reservation.doctorSchedule', function($query) use ($medicalRecord) {
+                        // Filter berdasarkan ID dokter dari rekam medis yang sedang dibuka
+                        $query->where('doctor_id', $medicalRecord->reservation->doctorSchedule->doctor_id);
+                    })
                     ->with('reservation.doctorSchedule.doctor')
                     ->latest()
                     ->get();
 
         return view('pengurus.medical-records.show', compact('medicalRecord', 'history'));
     }
+    /**
+     * Menampilkan form edit rekam medis
+     */
+    public function edit($id)
+    {
+        // Load relasi agar data pasien tampil di header form edit
+        $medicalRecord = MedicalRecord::with('reservation.patient')->findOrFail($id);
+        
+        return view('pengurus.medical-records.edit', compact('medicalRecord'));
+    }
+
+    /**
+     * Memperbarui data rekam medis ke database
+     */
+    public function update(Request $request, $id)
+    {
+        // Validasi input sesuai dengan field yang ada di blade
+        $request->validate([
+            'complaint' => 'required|string',
+            'diagnosis' => 'required|string|max:255',
+            'treatment' => 'required|string|max:255',
+            'doctor_notes' => 'nullable|string',
+        ]);
+
+        $medicalRecord = MedicalRecord::findOrFail($id);
+
+        // Update data rekam medis
+        $medicalRecord->update([
+            'complaint' => $request->complaint,
+            'diagnosis' => $request->diagnosis,
+            'treatment' => $request->treatment,
+            'doctor_notes' => $request->doctor_notes,
+        ]);
+
+        // Redirect kembali ke halaman detail dengan pesan sukses
+        return redirect()
+            ->route('pengurus.medical-records.show', $id)
+            ->with('success', 'Data rekam medis berhasil diperbarui.');
+    }
+
 }

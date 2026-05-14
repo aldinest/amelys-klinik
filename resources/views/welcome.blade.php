@@ -18,15 +18,63 @@
      <link rel="stylesheet" href="{{ asset('css/owl.carousel.css') }}">
      <link rel="stylesheet" href="{{ asset('css/owl.theme.default.min.css') }}">
 
+     <!-- Main css -->
      <link rel="stylesheet" href="{{ asset('css/tooplate-style.css') }}">
 
      <style>
-                /* 1. BRANDING & THEME */
+       /* --- Remake Section Selamat Datang --- */
+#about {
+    padding: 100px 0;
+    position: relative;
+}
+
+/* Default untuk Mobile & Tablet (Transparan Putih) */
+.about-content {
+    background: rgba(255, 255, 255, 0.85); /* Background transparan sesuai ralat lo */
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* Khusus Mode Desktop (Layar Lebar) */
+@media (min-width: 992px) {
+    .about-content {
+        background: transparent; /* Hilangkan background sesuai foto desktop */
+        box-shadow: none;
+        padding-left: 0;
+    }
+}
+
+/* --- Remake Section News (Info Terbaru) --- */
+.news-card {
+    background: #ffffff;
+    border-radius: 15px; /* Sudut melengkung halus */
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05); /* Shadow tipis seperti foto */
+    border: 1px solid #f0f0f0;
+    /* Menjaga proporsi agar tidak lonjong di desktop */
+    display: flex;
+    flex-direction: column;
+    min-height: 300px;
+}
+
+.news-card span {
+    color: #bdc3c7;
+    font-size: 14px;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.news-card h3 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    color: #333;
+    line-height: 1.4;
+}
         :root {
             --primary-blue: #007bff;
-            --dark-blue: #0056b3;
         }
-
         .navbar-brand {
             display: flex;
             align-items: center;
@@ -41,47 +89,179 @@
             font-weight: 700;
             color: #454545;
         }
-        
-        /* Override warna ke Biru */
-        :root { --primary-blue: #007bff; }
+        /* Custom Biru Amelys */
         header span i, .section-title h2::after, .about-info i, 
         .owl-theme .owl-controls .owl-page.active span,
         .navbar-default .navbar-nav li a:hover,
         .appointment-btn a { color: var(--primary-blue) !important; }
         
-        .section-btn, .appointment-btn a, .btn-blue {
+        .section-btn, .appointment-btn a {
             background: var(--primary-blue) !important;
             border-color: var(--primary-blue) !important;
             color: #fff !important;
         }
-        .spinner-rotate { border-top-color: var(--primary-blue) !important; }
 
-        /* Perbaikan Keterbacaan Mobile (Minisize) */
-     @media (max-width: 767px) {
-     #about .about-info {
-        background: rgba(255, 255, 255, 0.8); /* Memberi lapisan putih transparan di belakang teks */
-        padding: 15px;
-        border-radius: 8px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05); /* Bayangan halus agar teks lebih menonjol */
-    }
+        /* --- AMELYS SCHEDULE SYSTEM --- */
+        .schedule-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+        }
 
-    #about .about-info h2 {
-        font-size: 22px !important; /* Ukuran judul lebih proporsional di HP */
-        color: #333 !important;
-        margin-bottom: 15px;
-    }
+        .doctor-card {
+            background: #fff;
+            border-radius: 18px;
+            border: 1px solid #f0f0f0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: 0.3s;
+        }
 
-    #about .about-info p {
-        font-size: 14px !important; /* Ukuran teks isi agar tidak terlalu memenuhi layar */
-        line-height: 1.6;
-        color: #555 !important;
-    }
-     }
+        .doctor-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        /* Header: Nama Dokter & Spesialis */
+        .doctor-header {
+            background: #fcfdfe;
+            padding: 22px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-bottom: 1px solid #f8f9fa;
+        }
+
+        .doctor-header i {
+            font-size: 22px;
+            background: #eef6ff;
+            color: var(--primary-blue);
+            padding: 12px;
+            border-radius: 14px;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .doc-name {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 800;
+            color: #2c3e50;
+            letter-spacing: -0.3px;
+        }
+
+        .doc-specialty {
+            font-size: 11px;
+            color: #95a5a6;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            margin-top: 3px;
+        }
+
+        /* Body: Penataan Jadwal */
+        .doctor-body {
+            padding: 15px 22px 22px 22px;
+        }
+
+        .schedule-header-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .schedule-header-label span {
+            font-size: 10px;
+            font-weight: 800;
+            color: #bdc3c7;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .schedule-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px dotted #eee;
+        }
+
+        .schedule-row:last-child {
+            border-bottom: none;
+        }
+
+        .day-text {
+            font-size: 14px;
+            font-weight: 700;
+            color: #454545;
+            max-width: 60%;
+        }
+
+        .time-text {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--primary-blue);
+            text-align: right;
+            background: #f0f7ff;
+            padding: 6px 12px;
+            border-radius: 8px;
+            min-width: 110px;
+        }
+
+        /* Mobile Tweak */
+        @media (max-width: 767px) {
+            .schedule-container { grid-template-columns: 1fr; }
+            .doc-name { font-size: 16px; }
+            .day-text { font-size: 13px; }
+            .time-text { font-size: 13px; min-width: 100px; }
+        }
+
+        /* --- PERBAIKAN BACKGROUND & ALIGNMENT --- */
+        /* Section Jadwal Dokter */
+        #team {
+            background: linear-gradient(to bottom, #f9fbff 0%, #f4f7fc 100%); /* Gradasi halus kebiruan */
+            padding: 80px 0;
+        }
+
+        /* Memastikan Judul Section Rata Tengah */
+        .section-title.text-center {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .section-title.text-center h2 {
+            position: relative;
+            display: inline-block;
+            padding-bottom: 20px;
+        }
+
+        /* Menggeser garis bawah h2 ke tengah */
+        .section-title.text-center h2::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            margin-left: -30px; /* Setengah dari lebar garis (60px) */
+            width: 60px;
+            height: 3px;
+            background: var(--primary-blue);
+        }
+
+        /* Section Info Terbaru (Berita) juga diberi background beda biar tidak monoton */
+        #news {
+            background: #ffffff;
+        }
+
      </style>
 
 </head>
 <body id="top" data-spy="scroll" data-target=".navbar-collapse" data-offset="50">
 
+     <!-- PRE LOADER -->
      <section class="preloader">
           <div class="spinner">
                <span class="spinner-rotate"></span>
@@ -89,39 +269,41 @@
      </section>
 
 
+     <!-- HEADER -->
      <header>
           <div class="container">
                <div class="row">
-
                     <div class="col-md-4 col-sm-5">
                          <p>Selamat Datang di Amelys Klinik</p>
                     </div>
                          
                     <div class="col-md-8 col-sm-7 text-align-right">
                         <span class="phone-icon"><i class="fa fa-phone"></i> +62 823-3548-3854</span>
-                        <span class="email-icon"><i class="fa fa-envelope-o"></i> klinikapotekamelys118@gmail.com</span>
+                        <span class="email-icon"><i class="fa fa-envelope-o"></i> <a href="mailto:klinikapotekamelys118@gmail.com">klinikapotekamelys118@gmail.com</a></span>
                     </div>
-
                </div>
           </div>
      </header>
 
 
+     <!-- MENU -->
      <section class="navbar navbar-default navbar-static-top" role="navigation">
           <div class="container">
 
                <div class="navbar-header">
-                <button class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="icon icon-bar"></span>
-                    <span class="icon icon-bar"></span>
-                    <span class="icon icon-bar"></span>
-                </button>
-                <a href="{{ url('/') }}" class="navbar-brand">
-                    <img src="{{ asset('dist/img/logoamelys.png') }}" alt="Logo" class="logo">
-                    <span class="brand-text">AMELYS KLINIK</span>
-                </a>
-            </div>
+                    <button class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                         <span class="icon icon-bar"></span>
+                         <span class="icon icon-bar"></span>
+                         <span class="icon icon-bar"></span>
+                    </button>
 
+                    <a href="{{ url('/') }}" class="navbar-brand">
+                        <img src="{{ asset('dist/img/logoamelys.png') }}" alt="Logo" class="logo">
+                        <span class="brand-text">AMELYS KLINIK</span>
+                    </a>
+               </div>
+
+               <!-- MENU LINKS -->
                <div class="collapse navbar-collapse">
                     <ul class="nav navbar-nav navbar-right">
                          <li><a href="#top" class="smoothScroll">Beranda</a></li>
@@ -137,6 +319,7 @@
      </section>
 
 
+     <!-- HOME / SLIDER -->
      <section id="home" class="slider" data-stellar-background-ratio="0.5">
           <div class="container">
                <div class="row">
@@ -177,187 +360,112 @@
           </div>
      </section>
 
-     <section id="about">
-          <div class="container">
-               <div class="row">
 
-                    <div class="col-md-6 col-sm-6">
-                         <div class="about-info">
-                              <h2 class="wow fadeInUp" data-wow-delay="0.6s">Selamat Datang di Amelys Klinik</h2>
-                              <div class="wow fadeInUp" data-wow-delay="0.8s">
-                                   <p>Kami berdedikasi untuk memberikan pelayanan kesehatan terbaik dengan fasilitas modern dan tenaga medis profesional.</p>
-                                   <p>Kesehatan Anda adalah komitmen kami. Kami menyediakan berbagai layanan konsultasi dan perawatan untuk mendukung pemulihan Anda.</p>
-                              </div>
-
-                         </div>
-                    </div>
-                    
-               </div>
-          </div>
-     </section>
-
-
-    <section id="team" style="background: #ffffff; padding: 60px 0;">
+     <!-- ABOUT -->
+    <section id="about">
         <div class="container">
-            
-            <div class="section-title" style="text-align: center; margin-bottom: 50px;">
-                <h2 style="font-size: 30px; font-weight: 700; color: #333;">Jadwal Praktik Dokter Amelys</h2>
-                <div style="width: 80px; height: 4px; background: var(--primary-blue); margin: 15px auto 0;"></div>
-            </div>
-
-            <div class="table-responsive schedule-wrapper">
-                <table class="table schedule-table">
-                    <thead>
-                        <tr>
-                            <th width="35%">Nama Dokter</th>
-                            <th width="20%">Spesialis</th>
-                            <th width="25%">Hari</th>
-                            <th width="20%" class="text-right">Jam Praktik</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($schedules as $doctorName => $specialties)
-                            @php
-                                $totalRows = $specialties->sum(fn($s) => $s->count());
-                            @endphp
-
-                            @foreach($specialties as $specialty => $timeGroups)
-                                @foreach($timeGroups as $timeRange => $dayString)
-                                    <tr>
-                                        @if($loop->parent->first && $loop->first)
-                                            <td rowspan="{{ $totalRows }}" class="doc-name-cell">
-                                                {{ $doctorName }} {{-- Sesuai inputan admin --}}
-                                            </td>
-                                        @endif
-
-                                        @if($loop->first)
-                                            <td rowspan="{{ $timeGroups->count() }}" class="spec-name-cell">
-                                                {{ $specialty ?? 'Umum' }} {{-- Sesuai inputan admin --}}
-                                            </td>
-                                        @endif
-
-                                        <td class="day-cell">{{ $dayString }}</td>
-                                        <td class="time-cell text-right">{{ $timeRange }}</td>
-                                    </tr>
-                                @endforeach
-                            @endforeach
-                        @empty
-                            <tr>
-                                <td colspan="4" class="text-center" style="padding: 50px !important; color: #999;">
-                                    Belum ada jadwal dokter tersedia.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+            <div class="row">
+                <div class="col-md-7 col-sm-12">
+                    <div class="about-content wow fadeInUp" data-wow-delay="0.6s">
+                        <h2 style="font-weight: 800; font-size: 38px;">Selamat Datang di Amelys Klinik</h2>
+                        <p>Kami berdedikasi untuk memberikan pelayanan kesehatan terbaik dengan fasilitas modern dan tenaga medis profesional.</p>
+                        <p>Kesehatan Anda adalah komitmen kami. Kami menyediakan berbagai layanan kesehatan untuk mendukung pemulihan Anda.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
-    <style>
-        /* Wrapper dengan bayangan halus agar lepas dari BG, tapi tetap dominan putih */
-        .schedule-wrapper {
-            background: #ffffff;
-            padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            border: 1px solid #eee;
-        }
-
-        .schedule-table thead tr {
-            border-top: 4px solid var(--primary-blue);
-            background-color: #f8f9fa;
-        }
-
-        .schedule-table thead th {
-            padding: 18px 15px !important;
-            color: #444 !important;
-            font-weight: 700 !important;
-            border: none !important;
-        }
-
-        .schedule-table td {
-            padding: 18px 15px !important;
-            vertical-align: middle !important;
-            border-bottom: 1px solid #f0f0f0 !important;
-        }
-
-        .doc-name-cell {
-            font-weight: 700;
-            color: #222;
-            background-color: #ffffff !important;
-        }
-
-        .spec-name-cell {
-            color: var(--primary-blue);
-            font-weight: 600;
-        }
-
-        .day-cell { color: #555; }
-        
-        .time-cell {
-            font-weight: 700;
-            color: #333;
-        }
-
-        .text-right { text-align: right !important; }
-    </style>
-
-     <section id="news" data-stellar-background-ratio="2.5">
-     <div class="container">
-          <div class="row">
-               <div class="col-md-12 col-sm-12">
-                    <div class="section-title wow fadeInUp" data-wow-delay="0.1s">
-                         <h2>Info Terbaru</h2>
+        <!-- TEAM / JADWAL DOKTER -->
+        <section id="team" data-stellar-background-ratio="1">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12 col-sm-12">
+                        <!-- Tambahkan class text-center di sini -->
+                        <div class="section-title wow fadeInUp text-center" data-wow-delay="0.1s">
+                            <h2>Jadwal Praktik Dokter</h2>
+                        </div>
                     </div>
-               </div>
+                    <div class="col-md-12 col-sm-12">
+                        <div class="schedule-container wow fadeInUp" data-wow-delay="0.3s">
+                            @forelse($schedules as $doctorName => $specialties)
+                                <!-- Satu Kartu per Dokter -->
+                                <div class="doctor-card">
+                                    <div class="doctor-header">
+                                        <i class="fa fa-user-md"></i>
+                                        <div>
+                                            <h4 class="doc-name">{{ $doctorName }}</h4>
+                                            @foreach($specialties as $specialty => $timeGroups)
+                                                <span class="doc-specialty">{{ $specialty ?? 'Umum' }}</span>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="doctor-body">
+                                        <!-- Header Label Manual -->
+                                        <div class="schedule-header-label">
+                                            <span>HARI</span>
+                                            <span>JAM PRAKTIK</span>
+                                        </div>
 
-               @forelse($news as $item)
-               <div class="col-md-4 col-sm-6">
-                    <div class="news-thumb wow fadeInUp" data-wow-delay="0.4s" style="border: 1px solid #eee; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-                         <div class="news-info">
-                         <span style="color: #a5a5a5; font-size: 12px;">
-                              {{ \Carbon\Carbon::parse($item->date)->translatedFormat('d F Y') }}
-                         </span>
-                         
-                         <h3 style="margin-top: 10px;">
-                              <a href="#" style="color: #333; text-decoration: none;">{{ $item->title }}</a>
-                         </h3>
-                         
-                         <p style="color: #777;">{{ Str::limit($item->description, 120) }}</p>
-                         
-                         <div class="author" style="margin-top: 20px; border-top: 1px dashed #eee; padding-top: 15px;">
-                              <div class="author-info">
-                                   <h5 style="margin: 0; font-weight: bold;">{{ $item->author_name }}</h5>
-                                   <p style="margin: 0; font-size: 12px; color: #39260d;">{{ $item->author_role }}</p>
-                              </div>
-                         </div>
-                         </div>
+                                        @foreach($specialties as $specialty => $timeGroups)
+                                            @foreach($timeGroups as $timeRange => $dayString)
+                                                <div class="schedule-row">
+                                                    <div class="day-text">{{ $dayString }}</div>
+                                                    <div class="time-text">{{ $timeRange }}</div>
+                                                </div>
+                                            @endforeach
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="text-center p-5">
+                                    <p>Belum ada jadwal dokter tersedia.</p>
+                                </div>
+                            @endforelse
+                        </div>
                     </div>
-               </div>
-               @empty
-               <div class="col-md-12 text-center">
-                    <p>Belum ada informasi terbaru.</p>
-               </div>
-               @endforelse
+                </div>
+            </div>
+        </section>
 
-          </div>
-     </div>
-     </section>
 
+     <!-- NEWS -->
+    <section id="news">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <div class="section-title">
+                        <h2>Info Terbaru</h2>
+                    </div>
+                </div>
+                @forelse($news as $item)
+                    <div class="col-md-4 col-sm-12"> <!-- col-md-4 menjaga card tidak lonjong di desktop -->
+                        <div class="news-card wow fadeInUp" data-wow-delay="0.4s">
+                            <span>{{ \Carbon\Carbon::parse($item->date)->translatedFormat('d F Y') }}</span>
+                            <h3>{{ $item->title }}</h3>
+                            <p>{{ Str::limit($item->description, 150) }}</p>
+                            <div style="margin-top:auto; padding-top:15px; border-top:1px dotted #eee;">
+                                <strong>{{ $item->author_name }}</strong><br>
+                                <small class="text-muted">{{ $item->author_role }}</small>
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <p class="text-center">Belum ada info.</p>
+                @endforelse
+            </div>
+        </div>
+    </section>
+
+
+     <!-- GOOGLE MAP -->
      <section id="google-map">
-        <iframe 
-            src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d316.4702061124213!2d111.46994462994563!3d-7.878259367276554!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e799f8bfa569b17%3A0x281e7821b4a9b844!2sApotek%20%26%20Praktek%20Dokter%20Amelys!5e0!3m2!1sid!2sus!4v1773306554147!5m2!1sid!2sus" 
-            width="100%" 
-            height="350" 
-            style="border:0;" 
-            allowfullscreen="" 
-            loading="lazy" 
-            referrerpolicy="no-referrer-when-downgrade">
-        </iframe>
-     </section>          
+          <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d316.4702061124213!2d111.46994462994563!3d-7.878259367276554!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e799f8bfa569b17%3A0x281e7821b4a9b844!2sApotek%20%26%20Praktek%20Dokter%20Amelys!5e0!3m2!1sid!2sus!4v1773306554147!5m2!1sid!2sus" width="100%" height="350" frameborder="0" style="border:0" allowfullscreen></iframe>
+     </section>            
 
 
+     <!-- FOOTER (Isi asli Tooplate) -->
      <footer data-stellar-background-ratio="5">
           <div class="container">
                <div class="row">
@@ -375,11 +483,11 @@
                     </div>
 
                     <div class="col-md-4 col-sm-4"> 
-                         <div class="footer-thumb">
+                         <div class="footer-thumb"> 
                               <div class="opening-hours">
                                    <h4 class="wow fadeInUp" data-wow-delay="0.4s">Jam Buka</h4>
                                    <p>Senin - Sabtu <span>07:30 - 21:00</span></p>
-                                   <p>Sabtu <span>09:00 - 16:00</span></p>
+                                   <p>Minggu <span>09:00 - 16:00</span></p>
                               </div> 
 
                               <ul class="social-icon">
@@ -393,18 +501,10 @@
                     <div class="col-md-12 col-sm-12 border-top">
                          <div class="col-md-4 col-sm-6">
                               <div class="copyright-text"> 
-                                   <p>Copyright © 2026 Amelys Klinik 
+                                   <p>Copyright &copy; 2026 Amelys Klinik 
                                    | Desain: <a href="http://www.tooplate.com" target="_parent">Tooplate</a></p>
                               </div>
                          </div>
-                         <!-- <div class="col-md-6 col-sm-6">
-                              <div class="footer-link"> 
-                                   <a href="#">Tes Laboratorium</a>
-                                   <a href="#">Departemen</a>
-                                   <a href="#">Asuransi</a>
-                                   <a href="#">Karir</a>
-                              </div>
-                         </div> -->
                          <div class="col-md-2 col-sm-2 text-align-center">
                               <div class="angle-up-btn"> 
                                   <a href="#top" class="smoothScroll wow fadeInUp" data-wow-delay="1.2s"><i class="fa fa-angle-up"></i></a>
@@ -416,6 +516,7 @@
           </div>
      </footer>
 
+     <!-- SCRIPTS -->
      <script src="{{ asset('js/jquery.js') }}"></script>
      <script src="{{ asset('js/bootstrap.min.js') }}"></script>
      <script src="{{ asset('js/jquery.sticky.js') }}"></script>
@@ -424,78 +525,6 @@
      <script src="{{ asset('js/smoothscroll.js') }}"></script>
      <script src="{{ asset('js/owl.carousel.min.js') }}"></script>
      <script src="{{ asset('js/custom.js') }}"></script>
-     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-messaging.js"></script>
-
-<script>
-    // 1. Konfigurasi Firebase (Sudah disesuaikan dengan screenshot lo)
-    const firebaseConfig = {
-    apiKey: "AIzaSyB56s9ttNHzWd7dYuVJoCEe3t6FCsrd9NY", 
-    authDomain: "amelys-klinik.firebaseapp.com",     
-    projectId: "amelys-klinik",                       
-    messagingSenderId: "269503372470",                
-    appId: "1:269503372470:web:dabe88f549b2da2ae61a17" 
-     };
-
-    // 2. Inisialisasi
-    firebase.initializeApp(firebaseConfig);
-    const messaging = firebase.messaging();
-
-    // 3. Fungsi utama untuk ambil token
-    function initFirebaseMessaging() {
-        console.log('Memulai proses registrasi notifikasi...');
-
-        Notification.requestPermission().then((permission) => {
-            if (permission === 'granted') {
-                console.log('Izin diberikan! Mengambil token...');
-
-                // Pakai VAPID Key yang dari Firebase Console lo
-                messaging.getToken({ 
-                    vapidKey: 'BFUgrpnrzKRQVlb4k3CTO3er5tAYdwf2jZl4d2tnWl2rfR8eyuan5n8JIasOupSLzZOl n8Rqcj5cPPSm7IlyM60' 
-                }).then((currentToken) => {
-                    if (currentToken) {
-                        console.log('TOKEN PASIEN DIDAPAT:', currentToken);
-                        // Kirim ke server Laravel
-                        saveTokenToDatabase(currentToken);
-                    } else {
-                        console.log('Token kosong. Pastikan SSL/HTTPS aktif atau bersihkan cache browser.');
-                    }
-                }).catch((err) => {
-                    console.log('Gagal ambil token:', err);
-                });
-            } else {
-                console.log('Izin notifikasi ditolak oleh user.');
-            }
-        });
-    }
-
-    // 4. Fungsi kirim token ke Laravel (Backend)
-    function saveTokenToDatabase(token) {
-        console.log('Mengirim token ke database Amelys Klinik...');
-
-        fetch('/api/save-token', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Laravel butuh ini buat keamanan
-            },
-            body: JSON.stringify({
-                token: token
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Berhasil! Server merespon:', data);
-        })
-        .catch(error => {
-            console.error('Gagal simpan ke database:', error);
-        });
-    }
-
-    // Jalankan fungsi saat halaman beres diload
-    initFirebaseMessaging();
-</script>
 
 </body>
 </html>

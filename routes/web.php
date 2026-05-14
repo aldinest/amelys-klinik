@@ -119,6 +119,9 @@ Route::middleware(['auth', 'role:pengurus'])
 
         // Rekam Medis (Akses Terbatas)
         Route::resource('medical-records', MedicalRecordController::class)->only(['index', 'create', 'store', 'show']);
+        Route::get('medical-records/{id}/edit', [MedicalRecordController::class, 'edit'])->name('medical-records.edit');
+        Route::put('medical-records/{id}', [MedicalRecordController::class, 'update'])->name('medical-records.update');
+        
     });
 
 /**
@@ -169,20 +172,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-
-Route::get('/test-notif', function () {
-    $response = Http::withHeaders([
-        'Authorization' => 'Basic ' . config('services.onesignal.rest_api_key'),
-        'Content-Type' => 'application/json',
-    ])->post('https://onesignal.com/api/v1/notifications', [
-        'app_id' => config('services.onesignal.app_id'),
-        'included_segments' => ['All'],
-        'headings' => ['en' => 'Tes Notif Amelys Klinik'],
-        'contents' => ['en' => 'Halo bre! Notifikasi Desktop sudah jalan!'],
-    ]);
-
-    return $response->json();
 });
 
 // Load Auth Routes
