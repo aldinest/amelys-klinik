@@ -9,10 +9,34 @@ use Illuminate\Http\Request;
 
 class DoctorScheduleController extends Controller
 {
-     public function index()
+    public function index(Request $request)
     {
-        $schedules = DoctorSchedule::with('doctor')->paginate(10);
-        return view('pengurus.doctor_schedules.index', compact('schedules'));
+        // 1. Ambil semua dokter untuk dropdown
+        $doctors = Doctor::orderBy('name', 'asc')->get();
+
+        // 2. Inisialisasi Query
+        $query = DoctorSchedule::query()->with('doctor');
+
+        // 3. Logika Filter Tanggal (Meniru ReservasiController)
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $query->whereBetween('schedule_date', [$request->start_date, $request->end_date]);
+        } elseif ($request->filled('start_date')) {
+            $query->whereDate('schedule_date', $request->start_date);
+        } elseif ($request->filled('end_date')) {
+            $query->whereDate('schedule_date', $request->end_date);
+        }
+
+        // 4. Filter Dokter
+        if ($request->filled('doctor_id')) {
+            $query->where('doctor_id', $request->doctor_id);
+        }
+
+        // 5. Eksekusi Query
+        $schedules = $query->orderBy('schedule_date', 'desc')
+                        ->paginate(10)
+                        ->withQueryString(); // SANGAT PENTING agar filter tetap tersimpan saat pindah halaman
+
+        return view('pengurus.doctor_schedules.index', compact('schedules', 'doctors'));
     }
 
     public function create()

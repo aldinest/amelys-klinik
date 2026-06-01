@@ -1,16 +1,24 @@
 @extends('layouts.app_pengurus')
 
 @section('content')
+<style>
+    .btn-floating-pending {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    border-radius: 50px;
+    padding: 15px 20px;
+    }   
+</style>
 <div class="content-wrapper">
 
-    {{-- ALERT MESSAGES - Tambah container-fluid biar ada margin kiri-kanan --}}
+    {{-- ALERT MESSAGES --}}
     <div class="container-fluid pt-3">
         @foreach (['success' => 'success', 'error' => 'danger'] as $key => $type)
             @if (session($key))
                 <div class="alert alert-{{ $type }} alert-dismissible fade show shadow-sm">
-                    <h5><i class="icon fas fa-{{ $type == 'success' ? 'check' : 'ban' }}"></i> 
-                        {{ $type == 'success' ? 'Berhasil!' : 'Error!' }}
-                    </h5>
+                    <h5><i class="icon fas fa-{{ $type == 'success' ? 'check' : 'ban' }}"></i> {{ $type == 'success' ? 'Berhasil!' : 'Error!' }}</h5>
                     {{ session($key) }}
                     <button type="button" class="close text-white" data-dismiss="alert">&times;</button>
                 </div>
@@ -18,18 +26,18 @@
         @endforeach
     </div>
 
-    {{-- PAGE HEADER - Rapikan margin bottom --}}
+    {{-- PAGE HEADER --}}
     <section class="content-header pb-2">
         <div class="container-fluid">
             <div class="row mb-2 align-items-center">
                 <div class="col-sm-6">
-                    <h1 class="font-weight-bold text-dark">Jadwal Reservasi Pasien</h1>
+                    <h1 class="font-weight-bold text-dark">Jadwal Reservasi</h1>
                 </div>
-                <div class="col-sm-6 d-none d-sm-block">
-                    <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="{{ route('pengurus.dashboard') }}">Dashboard</a></li>
-                        <li class="breadcrumb-item active">Reservasi</li>
-                    </ol>
+                <div class="col-sm-6">
+                    {{-- Tombol Akses Cepat ke Pending Reservasi --}}
+                    <button type="button" class="btn btn-warning float-sm-right shadow-sm font-weight-bold" data-toggle="modal" data-target="#modalPending">
+                        <i class="fas fa-bell mr-1"></i> Perlu Konfirmasi ({{ \App\Models\Reservation::where('status', 'pending')->count() }})
+                    </button>
                 </div>
             </div>
         </div>
@@ -39,7 +47,7 @@
     <section class="content">
         <div class="container-fluid">
             
-            {{-- FILTER CARD - Konsistensi padding & alignment --}}
+            {{-- FILTER CARD --}}
             <div class="card shadow-sm border-0 mb-4">
                 <div class="card-body py-3">
                     <form method="GET" action="{{ route('pengurus.reservations.index') }}">
@@ -52,37 +60,18 @@
                                 <label class="small font-weight-bold text-muted">Sampai Tanggal</label>
                                 <input type="date" name="end_date" value="{{ request('end_date') }}" class="form-control">
                             </div>
-                            <div class="col-md-2 mb-2 mb-md-0">
+                            <div class="col-md-3 mb-2 mb-md-0">
                                 <label class="small font-weight-bold text-muted">Dokter</label>
-                                <select name="doctor_id" class="form-control shadow-none">
+                                <select name="doctor_id" class="form-control">
                                     <option value="">Semua Dokter</option>
                                     @foreach($doctors as $dr)
                                         <option value="{{ $dr->id }}" {{ request('doctor_id') == $dr->id ? 'selected' : '' }}>{{ $dr->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-md-2 mb-2 mb-md-0">
-                                <label class="small font-weight-bold text-muted">Status</label>
-                                <select name="status" class="form-control shadow-none">
-                                    <option value="">Semua Status</option>
-                                    <option value="tersedia" {{ request('status') == 'tersedia' ? 'selected' : '' }}>Tersedia</option>
-                                    <option value="penuh" {{ request('status') == 'penuh' ? 'selected' : '' }}>Penuh</option>
-                                    <option value="selesai" {{ request('status') == 'selesai' ? 'selected' : '' }}>Selesai</option>
-                                </select>
-                            </div>
-                           {{-- Tombol Search & Reset dengan Jarak --}}
-                            <div class="col-md-2">
-                                <div class="d-flex">
-                                    {{-- Tombol Search --}}
-                                    <button type="submit" class="btn btn-primary flex-fill mr-2 shadow-sm" title="Cari">
-                                        <i class="fas fa-search mr-1"></i> Cari
-                                    </button>
-                                    
-                                    {{-- Tombol Reset --}}
-                                    <a href="{{ route('pengurus.reservations.index') }}" class="btn btn-secondary shadow-sm" title="Reset">
-                                        <i class="fas fa-sync-alt"></i>
-                                    </a>
-                                </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-primary shadow-sm"><i class="fas fa-search mr-1"></i> Cari</button>
+                                <a href="{{ route('pengurus.reservations.index') }}" class="btn btn-secondary shadow-sm"><i class="fas fa-sync-alt"></i></a>
                             </div>
                         </div>
                     </form>
@@ -180,5 +169,71 @@
             </div>
         </div>
     </section>
+</div>
+
+{{-- Modal untuk list pending --}}
+<div class="modal fade" id="modalPending" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title font-weight-bold"><i class="fas fa-bell mr-2"></i> Reservasi Perlu Konfirmasi</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span>&times;</span></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="bg-light text-muted small text-uppercase">
+                            <tr>
+                                <th class="pl-4">Pasien</th>
+                                <th>Keluhan</th>
+                                <th>Jadwal</th>
+                                <th class="text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php $pendings = \App\Models\Reservation::with(['patient', 'schedule'])->where('status', 'pending')->get(); @endphp
+                            @forelse($pendings as $res)
+                            <tr>
+                                <td class="pl-4">
+                                    <div class="font-weight-bold text-dark">{{ $res->patient->name }}</div>
+                                </td>
+                                <td>
+                                    <div class="text-muted small" style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ $res->complaint }}">
+                                        {{ $res->action ?? '-' }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge badge-light border">
+                                        {{ \Carbon\Carbon::parse($res->schedule->schedule_date)->translatedFormat('d M Y') }}
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center">
+                                        <form action="{{ route('pengurus.reservations.approve', $res->id) }}" method="POST" class="mr-1">
+                                            @csrf
+                                            <button type="submit" class="btn btn-success btn-sm" title="Setujui">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </form>
+                                        <form action="{{ route('pengurus.reservations.cancel', $res->id) }}" method="POST" onsubmit="return confirm('Tolak reservasi ini?')">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="btn btn-danger btn-sm" title="Tolak">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted">Tidak ada reservasi pending.</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection

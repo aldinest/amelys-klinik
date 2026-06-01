@@ -238,7 +238,7 @@ $(document).ready(function() {
     const summaryBox = document.getElementById('selectedScheduleSummary');
     const hiddenDocInput = $('#doctorSelect');
 
-    // 1. FUNGSI RENDER KALENDER (Tetap Seperti Punya Anda)
+    // 1. FUNGSI RENDER KALENDER
     function renderCalendar(month, year, schedules) {
         calendarBody.innerHTML = '';
         month = parseInt(month); year = parseInt(year);
@@ -295,10 +295,9 @@ $(document).ready(function() {
         }
     }
 
-    // 2. FUNGSI FETCH DATA (Disesuaikan agar bisa dipanggil kartu)
+    // 2. FUNGSI FETCH DATA
     window.fetchSchedules = function() {
         let docId = hiddenDocInput.val();
-        // Jika belum pilih dokter, tampilkan kalender kosong (Permintaan Anda)
         if (!docId) { 
             renderCalendar(filterMonth.value, filterYear.value, []); 
             return; 
@@ -314,14 +313,14 @@ $(document).ready(function() {
             });
     }
 
-        // 3. FUNGSI PILIH JADWAL
-        function selectSched(s) {
+    // 3. FUNGSI PILIH JADWAL
+    function selectSched(s) {
         scheduleInput.value = s.id;
         
         summaryBox.innerHTML = `
             <div class="d-flex align-items-center mb-3">
                 <div class="mr-3 d-flex align-items-center justify-content-center bg-white shadow-sm" 
-                    style="width: 45px; height: 45px; border-radius: 12px; color: #007bff;">
+                     style="width: 45px; height: 45px; border-radius: 12px; color: #007bff;">
                     <i class="fas fa-user-md fa-lg"></i>
                 </div>
                 <div>
@@ -357,27 +356,46 @@ $(document).ready(function() {
         
         var doctorId = $(this).attr('data-id');
         hiddenDocInput.val(doctorId);
-        
-        fetchSchedules(); // Panggil fungsi fetch
+        fetchSchedules();
     });
 
     // 5. EVENT LISTENER LAINNYA
     filterMonth.addEventListener('change', fetchSchedules);
     filterYear.addEventListener('change', fetchSchedules);
 
+    // 6. SUBMIT FORM DENGAN ALERT KONFIRMASI
     document.getElementById('mainBookingForm').onsubmit = function(e) {
         e.preventDefault();
+        
         Swal.fire({
-            title: 'Konfirmasi?',
-            text: "Daftar untuk jadwal yang dipilih?",
+            title: 'Konfirmasi Reservasi',
+            html: `
+                <div class="text-left">
+                    <p>Apakah Anda yakin ingin mendaftar untuk jadwal ini?</p>
+                    <div class="alert alert-warning mt-2" style="font-size: 13px; border-radius: 8px;">
+                        <i class="fas fa-info-circle mr-2"></i> 
+                        <strong>Catatan:</strong> Reservasi tambahan dalam bulan yang sama akan berstatus <strong>Pending</strong> dan perlu dikonfirmasi oleh pihak klinik.
+                    </div>
+                </div>
+            `,
             icon: 'question',
             showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#d33',
             confirmButtonText: 'Ya, Daftar!',
             cancelButtonText: 'Batal'
-        }).then(res => { if(res.isConfirmed) this.submit(); });
+        }).then(res => { 
+            if(res.isConfirmed) {
+                Swal.fire({
+                    title: 'Memproses...',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+                this.submit(); 
+            }
+        });
     };
 
-    // Jalankan pertama kali (Kalender tampil tapi kosong jadwal)
     fetchSchedules();
 });
 </script>

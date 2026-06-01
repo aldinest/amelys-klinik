@@ -68,42 +68,57 @@ class ReservationController extends Controller
         return response()->json($schedules);
     }
 
-   public function store(Request $request)
-{
-    $request->validate([
-        'doctor_schedule_id' => 'required|exists:doctor_schedules,id',
-        'action' => 'required|string|max:1000',
-    ]);
+    public function store(Request $request)
+    {
+        $request->validate([
+            'doctor_schedule_id' => 'required|exists:doctor_schedules,id',
+            'action' => 'required|string|max:1000',
+        ]);
 
-    $schedule = DoctorSchedule::findOrFail($request->doctor_schedule_id);
-    $patient  = auth()->user()->patient;
+        $schedule = DoctorSchedule::findOrFail($request->doctor_schedule_id);
+        $patient  = auth()->user()->patient;
 
-    // cek kuota
-    if ($schedule->remainingQuota() <= 0) {
-        return back()->with('error', 'Kuota jadwal ini sudah penuh.');
+        // 1. Cek kuota
+        if ($schedule->remainingQuota() <= 0) {
+            return back()->with('error', 'Kuota jadwal ini sudah penuh.');
+        }
+
+        // 2. Cegah double booking (tetap pertahankan)
+        $exists = Reservation::where('doctor_schedule_id', $schedule->id)
+            ->where('patient_id', $patient->id)
+            ->whereIn('status', ['approved', 'pending', 'completed']) // Tambahkan 'pending' biar gak spam di jadwal yang sama
+            ->exists();
+
+        if ($exists) {
+            return back()->with('error', 'Kamu sudah memiliki reservasi di jadwal ini.');
+        }
+
+        // 3. Logika Approval: Cek apakah sudah pernah reservasi di bulan ini
+        $hasMonthlyReservation = Reservation::where('patient_id', $patient->id)
+            ->whereMonth('created_at', now()->month)
+            ->whereYear('created_at', now()->year)
+            ->where('status', '!=', 'cancelled') // Jangan hitung yang batal
+            ->exists();
+
+        // Jika sudah pernah, statusnya 'pending', jika belum, 'approved'
+        $status = $hasMonthlyReservation ? 'pending' : 'approved';
+
+        // 4. Simpan Reservasi
+        Reservation::create([
+            'doctor_schedule_id' => $schedule->id,
+            'patient_id' => $patient->id,
+            'action' => $request->action,
+            'status' => $status,
+        ]);
+
+        $message = $status === 'pending' 
+            ? 'Reservasi berhasil dibuat dan sedang menunggu konfirmasi pengurus.' 
+            : 'Reservasi berhasil dibuat.';
+
+        return redirect()
+            ->route('pasien.reservations.index')
+            ->with('success', $message);
     }
-
-    // cegah double booking
-    $exists = Reservation::where('doctor_schedule_id', $schedule->id)
-        ->where('patient_id', $patient->id)
-        ->whereIn('status', ['approved', 'completed'])
-        ->exists();
-
-    if ($exists) {
-        return back()->with('error', 'Kamu sudah reservasi di jadwal ini.');
-    }
-
-    Reservation::create([
-        'doctor_schedule_id' => $schedule->id,
-        'patient_id' => $patient->id,
-        'action' => $request->action,
-        'status' => 'approved',
-    ]);
-
-    return redirect()
-        ->route('pasien.reservations.index')
-        ->with('success', 'Reservasi berhasil dibuat.');
-}
 
     public function destroy(Reservation $reservation)
     {

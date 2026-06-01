@@ -192,4 +192,28 @@ class ReservationController extends Controller
         return Excel::download(new ReservationsExport($scheduleId), $namaFile);
     }
 
+    // Pastikan method ini ada!
+    public function indexPending()
+    {
+        $pendingReservations = Reservation::where('status', 'pending')->latest()->get();
+        return view('pengurus.reservations.pending', compact('pendingReservations'));
+    }
+
+    // Pastikan method approve juga ada
+    public function approve($id)
+    {
+        $res = Reservation::findOrFail($id);
+        $res->update(['status' => 'approved']);
+        return back()->with('success', 'Reservasi pasien telah disetujui.');
+    }
+
+    public function reject($id)
+    {
+        $res = Reservation::findOrFail($id);
+        // Kita bisa hapus reservasi atau ubah statusnya jadi 'cancelled'
+        $res->update(['status' => 'cancelled']); 
+        
+        return back()->with('success', 'Reservasi pasien telah ditolak.');
+    }
+
 }

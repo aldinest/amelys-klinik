@@ -13,6 +13,11 @@ class Reservation extends Model
         'status',
     ];
 
+    public function scopePending($query)
+    {
+        return $query->where('status', 'pending');
+    }
+
     public function doctorSchedule()
     {
         return $this->belongsTo(DoctorSchedule::class);

@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\News;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http; // Tetap pakai library andalan lo buat nembak API
+use Illuminate\Support\Facades\Http; 
 
 class NewsController extends Controller
 {
@@ -46,30 +46,43 @@ class NewsController extends Controller
      */
     private function sendOneSignalNotification($news)
     {
-        $appId = config('services.onesignal.app_id');
-        $restKey = config('services.onesignal.rest_api_key');
+        // Jika config() mengembalikan null, kita paksa ambil langsung dari env() buat jaga-jaga cache
+        $appId = config('services.onesignal.app_id') ?? env('ONESIGNAL_APP_ID');
+        $restKey = config('services.onesignal.rest_api_key') ?? env('ONESIGNAL_REST_API_KEY');
 
         $url = 'https://onesignal.com/api/v1/notifications';
 
-        // Persiapan data buat dikirim ke API OneSignal
         $data = [
             'app_id' => $appId,
-            'included_segments' => ['All'], // Mengirim ke SEMUA orang yang sudah klik "Subscribe"
+            'included_segments' => ['All'], 
             'headings' => [
-                'en' => "Info Baru: " . $news->title
+                'en' => "Info Baru: " . trim($news->title)
             ],
             'contents' => [
                 'en' => "Ada kabar terbaru dari Amelys nih, cek yuk!"
             ],
-            'chrome_web_icon' => asset('dist/img/logoamelys.png'), // Logo klinik kamu
-            'url' => route('welcome'), // Tujuan pas diklik
+            'chrome_web_icon' => asset('dist/img/logoamelys.png'), 
+            'url' => route('welcome'), 
         ];
 
-        // Eksekusi "tembak" API OneSignal
-        Http::withHeaders([
-            'Authorization' => 'Basic ' . $restKey,
+        // Eksekusi tembak API
+        $response = Http::withHeaders([
+            'Authorization' => 'Basic ' . trim($restKey),
             'Content-Type'  => 'application/json',
         ])->post($url, $data);
+
+        // ==========================================
+        // SEKSI DEBUGGING (Biar Kelihatan Error-nya)
+        // ==========================================
+        if ($response->failed()) {
+            // Kalau gagal, Laravel bakal stop dan nampilin pesan error asli dari OneSignal
+            dd([
+                'Status Error' => 'Gagal Nembak API OneSignal!',
+                'Pesan dari OneSignal' => $response->json(),
+                'Kunci APP_ID lo' => $appId,
+                'Kunci REST_KEY lo' => $restKey ? 'Sudah Terisi (Aman)' : 'KOSONG / TIDAK TERBACA!'
+            ]);
+        }
     }
 
     // Fungsi edit, update, destroy tetap sama...

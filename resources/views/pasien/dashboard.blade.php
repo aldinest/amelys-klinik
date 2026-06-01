@@ -88,8 +88,8 @@
                     </div>
                     <h6 class="font-weight-bold text-dark mb-1">{{ $news[0]->title }}</h6>
                     {{-- Menggunakan nl2br agar enter/baris baru di database muncul sebagai baris baru di tampilan --}}
-                    <div class="mb-0 text-muted small" style="line-height: 1.5; white-space: pre-line;">
-                        {!! nl2br(e($news[0]->description)) !!}
+                    <div class="mb-0 text-muted small" style="line-height: 1.6; white-space: pre-line;">
+                        {{ $news[0]->description }}
                     </div>
                 </div>
             </div>

@@ -104,6 +104,12 @@ Route::middleware(['auth', 'role:pengurus'])
         Route::get('/report/pdf', [ReportController::class, 'exportPdf'])->name('report.pdf');
         Route::get('/report/export-pdf/{month}/{year}', [ReportController::class, 'exportMonthlyPdf'])->name('report.export_monthly_pdf');
         Route::get('/report/excel', [ReportController::class, 'exportExcel'])->name('report.excel');
+
+        //Aprove Status Reservation
+        Route::get('reservations/pending', [PengurusReservation::class, 'indexPending'])->name('reservations.pending');
+        Route::post('reservations/{id}/approve', [PengurusReservation::class, 'approve'])->name('reservations.approve');
+        Route::post('reservations/{id}/reject', [PengurusReservation::class, 'reject'])->name('reservations.reject');
+        Route::delete('/reservations/{reservation}/cancel', [PengurusReservation::class, 'cancel'])->name('reservations.cancel');
         
         // Export Reservasi
         Route::get('/reservations/export-pdf/{schedule_id}', [PengurusReservation::class, 'exportPdf'])->name('reservations.export-pdf');
@@ -112,8 +118,7 @@ Route::middleware(['auth', 'role:pengurus'])
         // Operasional
         Route::resource('doctor_schedules', DoctorScheduleController::class);
         Route::resource('reservations', PengurusReservation::class);
-        Route::delete('/reservations/{reservation}/cancel', [PengurusReservation::class, 'cancel'])->name('reservations.cancel');
-
+        
         // Rekap History
         Route::get('/report', [ReportController::class, 'index'])->name('report.index');
 
