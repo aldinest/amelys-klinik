@@ -110,7 +110,9 @@
 <!-- AdminLTE for demo purposes -->
 <!-- <script src="{{ asset('dist/js/demo.js') }}"></script> -->
 <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
-<script src="{{ asset('dist/js/pages/dashboard.js') }}"></script>
+@if(request()->is('admin/dashboard') || request()->is('admin'))
+    <script src="{{ asset('dist/js/pages/dashboard.js') }}"></script>
+@endif
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>

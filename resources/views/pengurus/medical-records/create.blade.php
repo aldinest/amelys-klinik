@@ -103,9 +103,13 @@
                                         <small class="d-block text-uppercase font-weight-bold text-muted small-text">Diagnosis</small>
                                         <span class="text-dark">{{ $history->diagnosis }}</span>
                                     </div>
-                                    <div class="px-1">
+                                    <div class="px-1 mb-2">
                                         <small class="d-block text-uppercase font-weight-bold text-muted small-text">Tindakan</small>
                                         <span class="text-muted italic text-sm">{{ $history->treatment }}</span>
+                                    </div>
+                                    <div class="px-1 mt-1">
+                                        <small class="d-block text-uppercase font-weight-bold text-info small-text">Catatan</small>
+                                        <span class="text-dark text-sm">{{ $history->doctor_notes ?? '-' }}</span>
                                     </div>
                                 </div>
                             @empty
