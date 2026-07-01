@@ -186,4 +186,13 @@ class MedicalRecordController extends Controller
             ->with('success', 'Data rekam medis berhasil diperbarui.');
     }
 
+    public function cetak($id) {
+        $medicalRecord = MedicalRecord::findOrFail($id);
+        $history = MedicalRecord::whereHas('reservation', function($q) use ($medicalRecord) {
+            $q->where('patient_id', $medicalRecord->reservation->patient_id);
+        })->get();
+
+        return view('pengurus.medical-records.print_view', compact('medicalRecord', 'history'));
+    }
+
 }

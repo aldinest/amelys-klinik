@@ -87,16 +87,17 @@
                 </div>
 
                 <div class="card-body p-0">
-                    <div class="table-responsive">
+                    {{-- DESKTOP: Tabel --}}
+                    <div class="table-responsive d-none d-md-block">
                         <table class="table table-hover align-middle mb-0">
                             <thead class="bg-light text-muted small text-uppercase font-weight-bold">
                                 <tr>
-                                    <th width="60" class="text-center py-3 border-0">No</th>
-                                    <th class="py-3 border-0">Dokter & Spesialis</th>
-                                    <th class="py-3 border-0">Waktu Praktek</th>
-                                    <th class="text-center py-3 border-0">Status Kuota</th>
-                                    <th class="text-center py-3 border-0">Ketersediaan</th>
-                                    <th width="120" class="text-center py-3 border-0">Aksi</th>
+                                    <th class="text-center">No</th>
+                                    <th>Dokter & Spesialis</th>
+                                    <th>Waktu Praktek</th>
+                                    <th class="text-center">Status Kuota</th>
+                                    <th class="text-center">Ketersediaan</th>
+                                    <th class="text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -107,64 +108,88 @@
                                         $isPast = \Carbon\Carbon::parse($schedule->schedule_date)->isPast() && !\Carbon\Carbon::parse($schedule->schedule_date)->isToday();
                                     @endphp
                                     <tr class="{{ $isPast ? 'bg-light' : '' }}">
-                                        <td class="text-center align-middle">{{ $schedules->firstItem() + $loop->index }}</td>
-                                        <td class="align-middle">
+                                        <td class="text-center">{{ $schedules->firstItem() + $loop->index }}</td>
+                                        <td>
                                             <div class="font-weight-bold text-dark">{{ $schedule->doctor->name }}</div>
                                             <span class="text-primary small font-weight-bold">{{ strtoupper($schedule->doctor->specialist) }}</span>
                                         </td>
-                                        <td class="align-middle">
-                                            <div class="font-weight-bold">
-                                                <i class="far fa-calendar-alt mr-1 text-muted"></i> 
-                                                {{ \Carbon\Carbon::parse($schedule->schedule_date)->locale('id')->translatedFormat('l, d F Y') }}
-                                            </div>
+                                        <td>
+                                            <div><i class="far fa-calendar-alt mr-1 text-muted"></i> {{ \Carbon\Carbon::parse($schedule->schedule_date)->translatedFormat('d M Y') }}</div>
                                             <div class="small text-muted"><i class="far fa-clock mr-1"></i> {{ $schedule->start_time }} - {{ $schedule->end_time }}</div>
                                         </td>
-                                        <td class="text-center align-middle">
-                                            <div class="progress mb-1 mx-auto" style="height: 6px; max-width: 80px;">
+                                        <td class="text-center">
+                                            <div class="progress mx-auto" style="height: 6px; max-width: 80px;">
                                                 @php $percent = ($usedQuota / $schedule->quota) * 100; @endphp
                                                 <div class="progress-bar {{ $isFull ? 'bg-danger' : 'bg-success' }}" style="width: {{ $percent }}%"></div>
                                             </div>
-                                            <span class="small font-weight-bold {{ $isFull ? 'text-danger' : 'text-dark' }}">{{ $usedQuota }} / {{ $schedule->quota }}</span>
+                                            <span class="small font-weight-bold">{{ $usedQuota }}/{{ $schedule->quota }}</span>
                                         </td>
-                                       <td class="text-center align-middle">
-                                            @if ($isPast)
-                                                <span class="badge badge-secondary px-3 py-2 shadow-sm">Selesai</span>
-                                            @elseif ($isFull)
-                                                <span class="badge badge-danger px-3 py-2 shadow-sm">Penuh</span>
-                                            @else
-                                                <span class="badge badge-success px-3 py-2 shadow-sm">Tersedia</span>
+                                        <td class="text-center">
+                                            @if ($isPast) <span class="badge badge-secondary">Selesai</span>
+                                            @elseif ($isFull) <span class="badge badge-danger">Penuh</span>
+                                            @else <span class="badge badge-success">Tersedia</span> @endif
+                                        </td>
+                                        <td class="text-center">
+                                            <a href="{{ route('pengurus.reservations.show', $schedule->id) }}" class="btn btn-info btn-sm"><i class="fas fa-eye"></i></a>
+                                            @if (!$isPast && !$isFull)
+                                                <a href="{{ route('pengurus.reservations.create', ['schedule' => $schedule->id]) }}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i></a>
                                             @endif
-                                        </td>
-                                        <td class="text-center align-middle">
-                                            <div class="btn-group">
-                                                <a href="{{ route('pengurus.reservations.show', $schedule->id) }}" class="btn btn-info btn-sm rounded shadow-sm mr-1"><i class="fas fa-eye"></i></a>
-                                                @if ($isPast)
-                                                    <button class="btn btn-outline-secondary btn-sm rounded" disabled><i class="fas fa-lock"></i></button>
-                                                @elseif (!$isFull)
-                                                    <a href="{{ route('pengurus.reservations.create', ['schedule' => $schedule->id]) }}" class="btn btn-primary btn-sm rounded shadow-sm"><i class="fas fa-plus"></i></a>
-                                                @else
-                                                    <button class="btn btn-outline-danger btn-sm rounded" disabled><i class="fas fa-ban"></i></button>
-                                                @endif
-                                            </div>
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="6" class="text-center py-5 text-muted">Tidak ada jadwal ditemukan.</td></tr>
+                                    <tr><td colspan="6" class="text-center py-4">Tidak ada jadwal ditemukan.</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
                     </div>
-                </div>
 
-                <div class="card-footer bg-white py-3 border-top-0">
-                    <div class="row align-items-center text-center text-md-left">
-                        <div class="col-md-6 mb-2 mb-md-0">
-                            <span class="small text-muted">Menampilkan <strong>{{ $schedules->firstItem() ?? 0 }}</strong>-<strong>{{ $schedules->lastItem() ?? 0 }}</strong> dari <strong>{{ $schedules->total() ?? 0 }}</strong> jadwal</span>
-                        </div>
-                        <div class="col-md-6 d-flex justify-content-center justify-content-md-end">
-                            {{ $schedules->appends(request()->query())->links('pagination::bootstrap-4') }}
-                        </div>
+                    {{-- MOBILE: Card View --}}
+                    <div class="d-md-none">
+                        @forelse ($schedules as $s)
+                            @php 
+                                $used = $s->reservations->whereIn('status', ['approved', 'completed'])->count();
+                                $isFull = $used >= $s->quota;
+                                $isPast = \Carbon\Carbon::parse($s->schedule_date)->isPast() && !\Carbon\Carbon::parse($s->schedule_date)->isToday();
+                            @endphp
+                            
+                            <div class="card mb-2 border-0 shadow-sm mx-2">
+                                <div class="card-body p-3">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h6 class="font-weight-bold text-dark mb-0">{{ $s->doctor->name }}</h6>
+                                            <small class="text-primary font-weight-bold">{{ strtoupper($s->doctor->specialist) }}</small>
+                                        </div>
+                                        <span class="badge {{ $isPast ? 'badge-secondary' : ($isFull ? 'badge-danger' : 'badge-success') }} p-2">
+                                            {{ $isPast ? 'Selesai' : ($isFull ? 'Penuh' : 'Tersedia') }}
+                                        </span>
+                                    </div>
+
+                                    <div class="row text-muted small mt-3">
+                                        <div class="col-6">
+                                            <i class="far fa-calendar-alt mr-1"></i> {{ \Carbon\Carbon::parse($s->schedule_date)->format('d M y') }}
+                                        </div>
+                                        <div class="col-6 text-right">
+                                            <i class="far fa-clock mr-1"></i> {{ substr($s->start_time, 0, 5) }} - {{ substr($s->end_time, 0, 5) }}
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-3 pt-2 border-top d-flex justify-content-between align-items-center">
+                                        <span class="text-dark font-weight-bold">
+                                            <i class="fas fa-users mr-1 text-secondary"></i> {{ $used }}/{{ $s->quota }} Pasien
+                                        </span>
+                                        <a href="{{ route('pengurus.reservations.show', $s->id) }}" class="btn btn-sm btn-info px-3">Detail</a>
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="text-center py-5 text-muted">Tidak ada jadwal ditemukan.</div>
+                        @endforelse
                     </div>
+                </div>
+                
+                {{-- Pagination Footer (tetap sama) --}}
+                <div class="card-footer bg-white">
+                    {{ $schedules->appends(request()->query())->links('pagination::bootstrap-4') }}
                 </div>
             </div>
         </div>

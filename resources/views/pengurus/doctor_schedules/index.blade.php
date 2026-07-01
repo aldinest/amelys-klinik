@@ -36,17 +36,17 @@
                     <form method="GET" action="{{ route('pengurus.doctor_schedules.index') }}">
                         <div class="row align-items-end">
                             {{-- Input Tanggal --}}
-                            <div class="col-md-2">
+                            <div class="col-md-2 col-6">
                                 <label class="small font-weight-bold text-muted">Dari Tanggal</label>
                                 <input type="date" name="start_date" value="{{ request('start_date') }}" class="form-control">
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-md-2 col-6">
                                 <label class="small font-weight-bold text-muted">Sampai Tanggal</label>
                                 <input type="date" name="end_date" value="{{ request('end_date') }}" class="form-control">
                             </div>
                             
                             {{-- Input Dokter --}}
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <label class="small font-weight-bold text-muted">Dokter</label>
                                 <select name="doctor_id" class="form-control">
                                     <option value="">Semua Dokter</option>
@@ -58,16 +58,16 @@
                                 </select>
                             </div>
 
-                            {{-- Area Tombol --}}
-                            <div class="col-md-5">
-                                <div class="d-flex justify-content-end" style="gap: 5px;">
-                                    <button type="submit" class="btn btn-primary shadow-sm px-3">
+                            {{-- Tombol Aksi --}}
+                            <div class="col-md-4 mt-3 mt-md-0">
+                                <div class="d-flex" style="gap: 10px;">
+                                    <button type="submit" class="btn btn-primary flex-fill shadow-sm">
                                         <i class="fas fa-search mr-1"></i> Cari
                                     </button>
-                                    <a href="{{ route('pengurus.doctor_schedules.index') }}" class="btn btn-secondary shadow-sm px-3" title="Reset Filter">
+                                    <a href="{{ route('pengurus.doctor_schedules.index') }}" class="btn btn-secondary shadow-sm">
                                         <i class="fas fa-sync-alt"></i>
                                     </a>
-                                    <a href="{{ route('pengurus.doctor_schedules.create') }}" class="btn btn-success shadow-sm px-3">
+                                    <a href="{{ route('pengurus.doctor_schedules.create') }}" class="btn btn-success shadow-sm">
                                         <i class="fas fa-plus mr-1"></i> Tambah Jadwal
                                     </a>
                                 </div>
@@ -85,7 +85,9 @@
                     </h6>
                 </div>
                 <div class="card-body p-0">
-                    <div class="table-responsive">
+                    
+                    {{-- 1. TAMPILAN DESKTOP (Muncul di layar md ke atas) --}}
+                    <div class="table-responsive d-none d-md-block">
                         <table class="table table-hover mb-0">
                             <thead class="bg-light text-muted small text-uppercase font-weight-bold">
                                 <tr>
@@ -106,9 +108,7 @@
                                             <div class="font-weight-bold text-dark">{{ $schedule->doctor->name }}</div>
                                             <small class="text-primary font-weight-bold">{{ strtoupper($schedule->doctor->specialist) }}</small>
                                         </td>
-                                        <td class="align-middle">
-                                            {{ \Carbon\Carbon::parse($schedule->schedule_date)->translatedFormat('d F Y') }}
-                                        </td>
+                                        <td class="align-middle">{{ \Carbon\Carbon::parse($schedule->schedule_date)->translatedFormat('d F Y') }}</td>
                                         <td class="align-middle">
                                             <span class="badge badge-light border">{{ $schedule->start_time }} - {{ $schedule->end_time }}</span>
                                         </td>
@@ -133,6 +133,39 @@
                                 @endforelse
                             </tbody>
                         </table>
+                    </div>
+
+                    {{-- 2. TAMPILAN MOBILE (Muncul hanya di layar kecil, d-md-none artinya sembunyi di medium ke atas) --}}
+                    <div class="d-md-none">
+                        @forelse ($schedules as $schedule)
+                            <div class="card mb-3 border-0 shadow-sm mx-2 mt-2">
+                                <div class="card-body p-3">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h6 class="font-weight-bold text-dark mb-0">{{ $schedule->doctor->name }}</h6>
+                                            <small class="text-primary">{{ strtoupper($schedule->doctor->specialist) }}</small>
+                                        </div>
+                                        <span class="badge {{ $schedule->status == 'active' ? 'badge-success' : 'badge-secondary' }} px-2 py-1">
+                                            {{ $schedule->status == 'active' ? 'Aktif' : 'Nonaktif' }}
+                                        </span>
+                                    </div>
+                                    <div class="small text-muted mb-3">
+                                        <i class="far fa-calendar-alt mr-1"></i> {{ \Carbon\Carbon::parse($schedule->schedule_date)->translatedFormat('d M Y') }} &nbsp;
+                                        <i class="far fa-clock mr-1"></i> {{ $schedule->start_time }} - {{ $schedule->end_time }} <br>
+                                        <i class="fas fa-users mr-1"></i> {{ $schedule->quota }} Pasien
+                                    </div>
+                                    <div class="d-flex justify-content-end border-top pt-2">
+                                        <a href="{{ route('pengurus.doctor_schedules.edit', $schedule->id) }}" class="btn btn-sm btn-outline-warning mr-2 px-3">Edit</a>
+                                        <form action="{{ route('pengurus.doctor_schedules.destroy', $schedule->id) }}" method="POST" onsubmit="return confirm('Hapus?')">
+                                            @csrf @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger px-3">Hapus</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="p-3 text-center text-muted">Tidak ada jadwal ditemukan.</div>
+                        @endforelse
                     </div>
                 </div>
 

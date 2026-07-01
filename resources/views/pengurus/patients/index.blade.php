@@ -63,7 +63,8 @@
 
                 {{-- TABLE BODY --}}
                 <div class="card-body p-0">
-                    <div class="table-responsive">
+                    {{-- DESKTOP: Tabel dengan tombol memanjang --}}
+                    <div class="table-responsive d-none d-md-block">
                         <table class="table table-bordered table-striped table-hover mb-0">
                             <thead class="bg-light">
                                 <tr>
@@ -72,89 +73,95 @@
                                     <th>Alamat</th>
                                     <th class="text-center">Gender</th>
                                     <th>No. HP</th>
-                                    <th style="width: 120px" class="text-center">Aksi</th>
+                                    <th style="width: 180px" class="text-center">Aksi</th>
                                 </tr>
                             </thead>
-
                             <tbody>
                                 @forelse ($patients as $patient)
+                                    @php
+                                        // Logic untuk WA, PWD, dan Data Reservasi
+                                        $num = preg_replace('/[^0-9]/', '', $patient->phone);
+                                        $wa = (substr($num, 0, 1) === '0') ? '62' . substr($num, 1) : $num;
+                                        $namaDepan = strtolower(explode(' ', trim($patient->name))[0]);
+                                        $tglLahir = $patient->date_of_birth ? \Carbon\Carbon::parse($patient->date_of_birth)->format('dmY') : '123456';
+                                        $pwd = $namaDepan . $tglLahir;
+                                        
+                                        $latest = $patient->reservations()->latest()->first();
+                                        $tglRes = $latest ? \Carbon\Carbon::parse($latest->doctorSchedule->date)->format('d-m-Y') : '-';
+                                        $jamRes = $latest ? substr($latest->doctorSchedule->start_time, 0, 5) : '-';
+                                        $layanan = $latest->action ?? 'Konsultasi';
+                                    @endphp
                                     <tr>
-                                        <td class="text-center align-middle">
-                                            {{ $patients->firstItem() + $loop->index }}
-                                        </td>
+                                        <td class="text-center align-middle">{{ $patients->firstItem() + $loop->index }}</td>
                                         <td class="align-middle font-weight-bold">{{ $patient->name }}</td>
                                         <td class="align-middle text-sm">{{ $patient->address }}</td>
                                         <td class="text-center align-middle">
-                                            @if($patient->gender == 'L')
-                                                <span class="badge badge-info px-2">Laki-laki</span>
-                                            @else
-                                                <span class="badge badge-danger px-2" style="background-color: #e83e8c;">Perempuan</span>
-                                            @endif
+                                            @if($patient->gender == 'L') <span class="badge badge-info px-2">Laki-laki</span>
+                                            @else <span class="badge badge-danger px-2" style="background-color: #e83e8c;">Perempuan</span> @endif
                                         </td>
                                         <td class="align-middle">
-                                            @php
-                                                $num = preg_replace('/[^0-9]/', '', $patient->phone);
-                                                $wa = (substr($num, 0, 1) === '0') ? '62' . substr($num, 1) : $num;
-                                                
-                                                $namaDepan = strtolower(explode(' ', trim($patient->name))[0]);
-                                                $tglLahir = $patient->date_of_birth 
-                                                    ? \Carbon\Carbon::parse($patient->date_of_birth)->format('dmY') 
-                                                    : '123456';
-                                                $pwd = $namaDepan . $tglLahir;
-                                            @endphp
-
                                             <a href="https://wa.me/{{ $wa }}" target="_blank" class="text-dark font-weight-bold">
-                                                <i class="fab fa-whatsapp text-success mr-1"></i>
-                                                {{ $patient->phone }}
+                                                <i class="fab fa-whatsapp text-success mr-1"></i> {{ $patient->phone }}
                                             </a>
                                         </td>
                                         <td class="text-center align-middle">
-                                            {{-- Container tombol dengan flex-row di desktop, flex-column di mobile --}}
-                                            <div class="d-flex flex-md-row flex-column justify-content-center align-items-center" style="gap: 8px;">
-                                                
-                                                {{-- Tombol Detail --}}
-                                                <a href="{{ route('pengurus.patients.show', $patient->id) }}"
-                                                class="btn btn-info btn-sm shadow-sm border-0 w-100" 
-                                                style="min-width: 80px;">
-                                                    <i class="fas fa-eye"></i> Detail
-                                                </a>
-
-                                                @php
-                                                    $latestReservation = $patient->reservations()->latest()->first();
-                                                    $tglReservasi = $latestReservation ? \Carbon\Carbon::parse($latestReservation->doctorSchedule->date)->format('d-m-Y') : '-';
-                                                    $jamReservasi = $latestReservation ? substr($latestReservation->doctorSchedule->start_time, 0, 5) : '-';
-                                                    $layanan = $latestReservation->action ?? 'Konsultasi';
-                                                @endphp
-
-                                                {{-- Tombol Chat --}}
-                                                <button type="button" 
-                                                    class="btn btn-success btn-sm shadow-sm border-0 btn-kirim-wa w-100" 
-                                                    style="min-width: 100px;"
-                                                    data-toggle="modal" 
-                                                    data-target="#modalWA"
-                                                    data-nama="{{ $patient->name }}"
-                                                    data-phone="{{ $wa }}"
-                                                    data-email="{{ $patient->user->email ?? '-' }}"
-                                                    data-pwd="{{ $pwd }}"
-                                                    data-layanan="{{ $layanan }}"
-                                                    data-tgl-jadwal="{{ $tglReservasi }}"
-                                                    data-jam-jadwal="{{ $jamReservasi }}">
+                                            <div class="d-flex" style="gap: 5px;">
+                                                <a href="{{ route('pengurus.patients.show', $patient->id) }}" class="btn btn-info btn-sm flex-grow-1 border-0"><i class="fas fa-eye"></i> Detail</a>
+                                                <button type="button" class="btn btn-success btn-sm flex-grow-1 border-0 btn-kirim-wa" 
+                                                    data-toggle="modal" data-target="#modalWA" 
+                                                    data-nama="{{ $patient->name }}" data-phone="{{ $wa }}" 
+                                                    data-email="{{ $patient->user->email ?? '-' }}" data-pwd="{{ $pwd }}" 
+                                                    data-layanan="{{ $layanan }}" data-tgl-jadwal="{{ $tglRes }}" data-jam-jadwal="{{ $jamRes }}">
                                                     <i class="fab fa-whatsapp"></i> Chat
                                                 </button>
-
                                             </div>
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr>
-                                        <td colspan="6" class="text-center py-5 text-muted">
-                                            <i class="fas fa-user-injured fa-3x mb-3 opacity-25"></i><br>
-                                            <strong>Data pasien tidak ditemukan</strong>
-                                        </td>
-                                    </tr>
+                                    <tr><td colspan="6" class="text-center py-5 text-muted">Data tidak ditemukan</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
+                    </div>
+
+                    {{-- MOBILE: Card View dengan Spasi & Gender Lengkap --}}
+                    <div class="d-md-none">
+                        @forelse ($patients as $patient)
+                            @php
+                                $num = preg_replace('/[^0-9]/', '', $patient->phone);
+                                $wa = (substr($num, 0, 1) === '0') ? '62' . substr($num, 1) : $num;
+                                $pwd = strtolower(explode(' ', trim($patient->name))[0]) . ($patient->date_of_birth ? \Carbon\Carbon::parse($patient->date_of_birth)->format('dmY') : '123456');
+                                $latest = $patient->reservations()->latest()->first();
+                            @endphp
+                            <div class="card mb-3 shadow-sm border-0">
+                                <div class="card-body p-3">
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <span class="font-weight-bold text-dark">{{ $patient->name }}</span>
+                                        <span class="badge {{ $patient->gender == 'L' ? 'badge-info' : 'badge-danger' }}" style="{{ $patient->gender == 'P' ? 'background-color: #e83e8c;' : '' }}">
+                                            {{ $patient->gender == 'L' ? 'Laki-laki' : 'Perempuan' }}
+                                        </span>
+                                    </div>
+                                    <div class="text-muted small mb-3">
+                                        <div><strong>Alamat:</strong> {{ $patient->address ?: '-' }}</div>
+                                        <div><strong>No. HP:</strong> {{ $patient->phone }}</div>
+                                    </div>
+                                    <div class="d-flex" style="gap: 10px;">
+                                        <a href="{{ route('pengurus.patients.show', $patient->id) }}" class="btn btn-sm btn-info flex-grow-1">Detail</a>
+                                        <button type="button" class="btn btn-sm btn-success flex-grow-1 btn-kirim-wa" 
+                                            data-toggle="modal" data-target="#modalWA" 
+                                            data-nama="{{ $patient->name }}" data-phone="{{ $wa }}" 
+                                            data-email="{{ $patient->user->email ?? '-' }}" data-pwd="{{ $pwd }}" 
+                                            data-layanan="{{ $latest->action ?? 'Konsultasi' }}" 
+                                            data-tgl-jadwal="{{ $latest ? \Carbon\Carbon::parse($latest->doctorSchedule->date)->format('d-m-Y') : '-' }}" 
+                                            data-jam-jadwal="{{ $latest ? substr($latest->doctorSchedule->start_time, 0, 5) : '-' }}">
+                                            Chat
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="p-4 text-center text-muted">Tidak ada data</div>
+                        @endforelse
                     </div>
                 </div>
 

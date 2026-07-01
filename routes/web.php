@@ -101,6 +101,8 @@ Route::middleware(['auth', 'role:pengurus'])
         Route::get('/patients/pdf', [PengurusPatient::class, 'pdf'])->name('patients.pdf');
         Route::get('/patients/{patient}', [PengurusPatient::class, 'show'])->name('patients.show');
 
+        Route::get('/medical-records/{id}/cetak', [MedicalRecordController::class, 'cetak'])->name('medical-records.cetak');
+
         Route::get('/report/pdf', [ReportController::class, 'exportPdf'])->name('report.pdf');
         Route::get('/report/export-pdf/{month}/{year}', [ReportController::class, 'exportMonthlyPdf'])->name('report.export_monthly_pdf');
         Route::get('/report/excel', [ReportController::class, 'exportExcel'])->name('report.excel');
