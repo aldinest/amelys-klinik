@@ -13,12 +13,12 @@ class Reservation extends Model
         'status',
     ];
 
-    // SCOPE BARU: Untuk memudahkan pengecekan kuota di seluruh aplikasi
-    public function scopeBooked($query)
+    public function scopeCountingQuota($query)
     {
-        return $query->whereIn('status', ['approved', 'completed']);
+        // Ini benar, karena dia memfilter data di tabel reservations
+        return $query->whereIn('status', ['pending', 'approved', 'completed']);
     }
-    
+
     public function scopePending($query)
     {
         return $query->where('status', 'pending');

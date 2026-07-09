@@ -181,6 +181,23 @@
         font-family: 'Poppins', 'Montserrat', 'Segoe UI', sans-serif !important;
         border-radius: 15px !important;
     }
+    @media (max-width: 768px) {
+    /* Memberikan ruang napas di bawah konten utama agar tidak tertutup navbar bawah */
+    .content-wrapper {
+        padding-bottom: 80px !important; 
+    }
+    
+    /* Memberi jarak pada footer di dalam kartu reservasi */
+    .card-footer {
+        padding-top: 20px !important;
+        padding-bottom: 20px !important;
+    }
+
+    /* Mengatur jarak paginasi agar tidak terlalu rapat dengan teks info */
+    .pagination-sm {
+        margin-top: 15px;
+    }
+}
 </style>
 
 {{-- SCRIPT SWEETALERT2 --}}

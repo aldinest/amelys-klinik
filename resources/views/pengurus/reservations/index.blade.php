@@ -10,6 +10,26 @@
     border-radius: 50px;
     padding: 15px 20px;
     }   
+
+    @media (max-width: 768px) {
+    /* Tambahkan margin bawah pada kontainer konten utama */
+    .content-wrapper {
+        padding-bottom: 40px !important; 
+    }
+    
+    /* Atau jika Anda ingin memberi jarak khusus pada paginasi */
+    .pagination {
+        margin-bottom: 30px !important;
+    }
+    
+    /* Memastikan footer punya ruang yang cukup */
+    footer, .main-footer {
+        padding-top: 20px !important;
+        padding-bottom: 20px !important;
+    }
+
+    mark { padding: 0 4px; border-radius: 3px; }
+}
 </style>
 <div class="content-wrapper">
 
@@ -51,16 +71,23 @@
             <div class="card shadow-sm border-0 mb-4">
                 <div class="card-body py-3">
                     <form method="GET" action="{{ route('pengurus.reservations.index') }}">
-                        <div class="row align-items-end">
-                            <div class="col-md-3 mb-2 mb-md-0">
-                                <label class="small font-weight-bold text-muted">Dari Tanggal</label>
-                                <input type="date" name="start_date" value="{{ request('start_date') }}" class="form-control">
+                        <div class="row">
+                            <!-- Filter Tanggal (Dua Input jadi 1 baris di mobile, 2 baris di desktop) -->
+                            <div class="col-12 col-md-4">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <label class="small font-weight-bold text-muted">Dari Tanggal</label>
+                                        <input type="date" name="start_date" value="{{ request('start_date') }}" class="form-control">
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="small font-weight-bold text-muted">Sampai</label>
+                                        <input type="date" name="end_date" value="{{ request('end_date') }}" class="form-control">
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-md-3 mb-2 mb-md-0">
-                                <label class="small font-weight-bold text-muted">Sampai Tanggal</label>
-                                <input type="date" name="end_date" value="{{ request('end_date') }}" class="form-control">
-                            </div>
-                            <div class="col-md-3 mb-2 mb-md-0">
+                            
+                            <!-- Filter Dokter & Nama Pasien -->
+                            <div class="col-12 col-md-3 mt-3 mt-md-0">
                                 <label class="small font-weight-bold text-muted">Dokter</label>
                                 <select name="doctor_id" class="form-control">
                                     <option value="">Semua Dokter</option>
@@ -69,9 +96,18 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-md-3">
-                                <button type="submit" class="btn btn-primary shadow-sm"><i class="fas fa-search mr-1"></i> Cari</button>
-                                <a href="{{ route('pengurus.reservations.index') }}" class="btn btn-secondary shadow-sm"><i class="fas fa-sync-alt"></i></a>
+                            
+                            <div class="col-12 col-md-3 mt-3 mt-md-0">
+                                <label class="small font-weight-bold text-muted">Cari Nama Pasien</label>
+                                <input type="text" name="search_patient" value="{{ request('search_patient') }}" class="form-control" placeholder="Ketik nama...">
+                            </div>
+
+                            <!-- Tombol (diberi margin atas agar tidak menempel ke input) -->
+                            <div class="col-12 col-md-2 mt-3 d-flex align-items-end">
+                                <div class="btn-group w-100">
+                                    <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
+                                    <a href="{{ route('pengurus.reservations.index') }}" class="btn btn-secondary"><i class="fas fa-sync-alt"></i></a>
+                                </div>
                             </div>
                         </div>
                     </form>
@@ -81,10 +117,17 @@
             {{-- TABLE CARD --}}
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-white py-3 border-bottom-0">
-                    <h6 class="mb-0 font-weight-bold text-dark text-uppercase small">
-                        <i class="fas fa-calendar-check mr-2 text-primary"></i> Daftar Reservasi Pasien
-                    </h6>
+                    <h6 class="mb-0 font-weight-bold text-dark text-uppercase small"><i class="fas fa-calendar-check mr-2 text-primary"></i> Daftar Reservasi Pasien</h6>
                 </div>
+                
+                @if(request()->filled('search_patient'))
+                    <div class="px-4 pb-3">
+                        <div class="alert alert-light border shadow-sm d-inline-block mb-0">
+                            <i class="fas fa-search mr-2"></i> Mencari: <strong>"{{ request('search_patient') }}"</strong>
+                            <a href="{{ route('pengurus.reservations.index') }}" class="ml-3 text-danger font-weight-bold text-decoration-none"><i class="fas fa-times-circle"></i> Reset</a>
+                        </div>
+                    </div>
+                @endif
 
                 <div class="card-body p-0">
                     {{-- DESKTOP: Tabel --}}
@@ -103,7 +146,8 @@
                             <tbody>
                                 @forelse ($schedules as $schedule)
                                     @php
-                                        $usedQuota = $schedule->reservations->whereIn('status', ['approved', 'completed'])->count();
+                                        $usedQuota = $schedule->reservations()->whereIn('status', ['approved', 'completed'])->count();
+                                        $pendingCount = $schedule->reservations()->where('status', 'pending')->count();
                                         $isFull = $usedQuota >= $schedule->quota;
                                         $isPast = \Carbon\Carbon::parse($schedule->schedule_date)->isPast() && !\Carbon\Carbon::parse($schedule->schedule_date)->isToday();
                                     @endphp
@@ -112,6 +156,11 @@
                                         <td>
                                             <div class="font-weight-bold text-dark">{{ $schedule->doctor->name }}</div>
                                             <span class="text-primary small font-weight-bold">{{ strtoupper($schedule->doctor->specialist) }}</span>
+                                            @if(request()->filled('search_patient'))
+                                                @foreach($schedule->reservations()->whereHas('patient', fn($q) => $q->where('name', 'like', '%'.request('search_patient').'%'))->get() as $res)
+                                                    <div class="small mt-1 text-muted">Pasien: {!! str_ireplace(request('search_patient'), '<mark class="bg-warning">'.request('search_patient').'</mark>', $res->patient->name) !!}</div>
+                                                @endforeach
+                                            @endif
                                         </td>
                                         <td>
                                             <div><i class="far fa-calendar-alt mr-1 text-muted"></i> {{ \Carbon\Carbon::parse($schedule->schedule_date)->translatedFormat('d M Y') }}</div>
@@ -119,10 +168,9 @@
                                         </td>
                                         <td class="text-center">
                                             <div class="progress mx-auto" style="height: 6px; max-width: 80px;">
-                                                @php $percent = ($usedQuota / $schedule->quota) * 100; @endphp
-                                                <div class="progress-bar {{ $isFull ? 'bg-danger' : 'bg-success' }}" style="width: {{ $percent }}%"></div>
+                                                <div class="progress-bar {{ $isFull ? 'bg-danger' : 'bg-success' }}" style="width: {{ ($usedQuota / $schedule->quota) * 100 }}%"></div>
                                             </div>
-                                            <span class="small font-weight-bold">{{ $usedQuota }}/{{ $schedule->quota }}</span>
+                                            <span class="small font-weight-bold">{{ $usedQuota }}/{{ $schedule->quota }} @if($pendingCount > 0)<i class="fas fa-bell text-warning ml-1"></i>@endif</span>
                                         </td>
                                         <td class="text-center">
                                             @if ($isPast) <span class="badge badge-secondary">Selesai</span>
@@ -163,6 +211,22 @@
                                             {{ $isPast ? 'Selesai' : ($isFull ? 'Penuh' : 'Tersedia') }}
                                         </span>
                                     </div>
+                                    <div class="mb-2">
+                                        {{-- Highlight Mobile --}}
+                                        @if(request()->filled('search_patient'))
+                                            @php
+                                                $foundPatients = $s->reservations()->whereHas('patient', function($q) {
+                                                    $q->where('name', 'like', '%' . request('search_patient') . '%');
+                                                })->get();
+                                            @endphp
+                                            @foreach($foundPatients as $res)
+                                                <div class="small text-muted mt-1">
+                                                    <i class="fas fa-user-check"></i> Pasien: 
+                                                    <span class="bg-warning px-1">{!! request('search_patient') !!}</span>
+                                                </div>
+                                            @endforeach
+                                        @endif
+                                    </div>
 
                                     <div class="row text-muted small mt-3">
                                         <div class="col-6">
@@ -177,7 +241,19 @@
                                         <span class="text-dark font-weight-bold">
                                             <i class="fas fa-users mr-1 text-secondary"></i> {{ $used }}/{{ $s->quota }} Pasien
                                         </span>
-                                        <a href="{{ route('pengurus.reservations.show', $s->id) }}" class="btn btn-sm btn-info px-3">Detail</a>
+                                        
+                                        {{-- Grup Tombol --}}
+                                        <div class="btn-group">
+                                            {{-- Tombol Detail --}}
+                                            <a href="{{ route('pengurus.reservations.show', $s->id) }}" class="btn btn-sm btn-info">Detail</a>
+                                            
+                                            {{-- Tombol Tambah (Hanya muncul jika BELUM penuh & BELUM lewat) --}}
+                                            @if(!$isFull && !$isPast)
+                                                <a href="{{ route('pengurus.reservations.create', ['schedule' => $schedule->id]) }}" class="btn btn-sm btn-success">
+                                                    <i class="fas fa-plus"></i>
+                                                </a>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
                             </div>

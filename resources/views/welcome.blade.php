@@ -22,241 +22,60 @@
      <link rel="stylesheet" href="{{ asset('css/tooplate-style.css') }}">
 
      <style>
-       /* --- Remake Section Selamat Datang --- */
-#about {
-    padding: 100px 0;
-    position: relative;
-}
+    :root { --primary-blue: #007bff; }
 
-/* Default untuk Mobile & Tablet (Transparan Putih) */
-.about-content {
-    background: rgba(255, 255, 255, 0.85); /* Background transparan sesuai ralat lo */
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
+    /* --- Sections & Global Fixes --- */
+    #about { padding: 100px 0; position: relative; }
+    #team { background: linear-gradient(to bottom, #f9fbff 0%, #f4f7fc 100%); padding: 80px 0; }
+    #news { background: #ffffff; padding: 80px 0; }
 
-/* Khusus Mode Desktop (Layar Lebar) */
-@media (min-width: 992px) {
-    .about-content {
-        background: transparent; /* Hilangkan background sesuai foto desktop */
-        box-shadow: none;
-        padding-left: 0;
+    /* About Section */
+    .about-content { background: rgba(255, 255, 255, 0.85); padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    @media (min-width: 992px) { .about-content { background: transparent; box-shadow: none; padding-left: 0; } }
+
+    /* --- News Section Cards --- */
+    .news-card {
+        display: flex;
+        flex-direction: column;
+        background: #ffffff;
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        border: 1px solid #f0f0f0;
+        height: 100%; 
     }
-}
+    .news-card span { color: #bdc3c7; font-size: 14px; display: block; margin-bottom: 10px; }
+    .news-card h3 { font-family: 'Poppins', sans-serif; font-weight: 700; color: #333; line-height: 1.4; margin-bottom: 15px; }
+    .news-card p { flex-grow: 1; color: #666; margin-bottom: 20px; }
+    .news-card div[style*="margin-top:auto"] { margin-top: auto !important; padding-top: 15px; border-top: 1px dotted #eee; }
 
-/* --- Remake Section News (Info Terbaru) --- */
-.news-card {
-    background: #ffffff;
-    border-radius: 15px; /* Sudut melengkung halus */
-    padding: 30px;
-    margin-bottom: 30px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.05); /* Shadow tipis seperti foto */
-    border: 1px solid #f0f0f0;
-    /* Menjaga proporsi agar tidak lonjong di desktop */
-    display: flex;
-    flex-direction: column;
-    min-height: 300px;
-}
+    /* --- Schedule Section --- */
+    .schedule-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; }
+    .doctor-card { background: #fff; border-radius: 18px; border: 1px solid #f0f0f0; box-shadow: 0 10px 30px rgba(0,0,0,0.05); overflow: hidden; }
+    .doctor-header { background: #fcfdfe; padding: 22px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #f8f9fa; }
+    .doctor-header i { font-size: 22px; background: #eef6ff; color: var(--primary-blue); padding: 12px; border-radius: 14px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; }
+    .doc-name { margin: 0; font-size: 18px; font-weight: 800; color: #2c3e50; }
+    .doc-specialty { font-size: 11px; color: #95a5a6; text-transform: uppercase; font-weight: 700; display: block; margin-top: 3px; }
+    .doctor-body { padding: 15px 22px 22px 22px; }
+    .schedule-header-label { display: flex; justify-content: space-between; margin-bottom: 10px; }
+    .schedule-header-label span { font-size: 10px; font-weight: 800; color: #bdc3c7; text-transform: uppercase; letter-spacing: 1.5px; }
+    .schedule-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px dotted #eee; }
+    .time-text { font-size: 13px; font-weight: 800; color: var(--primary-blue); background: #f0f7ff; padding: 6px 10px; border-radius: 8px; }
 
-.news-card span {
-    color: #bdc3c7;
-    font-size: 14px;
-    display: block;
-    margin-bottom: 10px;
-}
+    /* --- Navbar & Branding --- */
+    .navbar-brand { display: flex; align-items: center; }
+    .navbar-brand .logo { height: 40px; width: auto; margin-right: 10px; }
+    .navbar-brand .brand-text { font-size: 20px; font-weight: 700; color: #454545; }
+    .section-title.text-center h2::after { content: ""; position: absolute; bottom: 0; left: 50%; margin-left: -30px; width: 60px; height: 3px; background: var(--primary-blue); }
+    
+    header span i, .appointment-btn a { color: var(--primary-blue) !important; }
+    .section-btn, .appointment-btn a { background: var(--primary-blue) !important; border-color: var(--primary-blue) !important; color: #fff !important; }
 
-.news-card h3 {
-    font-family: 'Poppins', sans-serif;
-    font-weight: 700;
-    color: #333;
-    line-height: 1.4;
-}
-        :root {
-            --primary-blue: #007bff;
-        }
-        .navbar-brand {
-            display: flex;
-            align-items: center;
-        }
-        .navbar-brand .logo {
-            height: 40px;
-            width: auto;
-            margin-right: 10px;
-        }
-        .navbar-brand .brand-text {
-            font-size: 20px;
-            font-weight: 700;
-            color: #454545;
-        }
-        /* Custom Biru Amelys */
-        header span i, .section-title h2::after, .about-info i, 
-        .owl-theme .owl-controls .owl-page.active span,
-        .navbar-default .navbar-nav li a:hover,
-        .appointment-btn a { color: var(--primary-blue) !important; }
-        
-        .section-btn, .appointment-btn a {
-            background: var(--primary-blue) !important;
-            border-color: var(--primary-blue) !important;
-            color: #fff !important;
-        }
-
-        /* --- AMELYS SCHEDULE SYSTEM --- */
-        .schedule-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 25px;
-        }
-
-        .doctor-card {
-            background: #fff;
-            border-radius: 18px;
-            border: 1px solid #f0f0f0;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-            overflow: hidden;
-            transition: 0.3s;
-        }
-
-        .doctor-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-        }
-
-        /* Header: Nama Dokter & Spesialis */
-        .doctor-header {
-            background: #fcfdfe;
-            padding: 22px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            border-bottom: 1px solid #f8f9fa;
-        }
-
-        .doctor-header i {
-            font-size: 22px;
-            background: #eef6ff;
-            color: var(--primary-blue);
-            padding: 12px;
-            border-radius: 14px;
-            width: 45px;
-            height: 45px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .doc-name {
-            margin: 0;
-            font-size: 18px;
-            font-weight: 800;
-            color: #2c3e50;
-            letter-spacing: -0.3px;
-        }
-
-        .doc-specialty {
-            font-size: 11px;
-            color: #95a5a6;
-            text-transform: uppercase;
-            font-weight: 700;
-            letter-spacing: 1.2px;
-            margin-top: 3px;
-        }
-
-        /* Body: Penataan Jadwal */
-        .doctor-body {
-            padding: 15px 22px 22px 22px;
-        }
-
-        .schedule-header-label {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-
-        .schedule-header-label span {
-            font-size: 10px;
-            font-weight: 800;
-            color: #bdc3c7;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-        }
-
-        .schedule-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px 0;
-            border-bottom: 1px dotted #eee;
-        }
-
-        .schedule-row:last-child {
-            border-bottom: none;
-        }
-
-        .day-text {
-            font-size: 14px;
-            font-weight: 700;
-            color: #454545;
-            max-width: 60%;
-        }
-
-        .time-text {
-            font-size: 15px;
-            font-weight: 800;
-            color: var(--primary-blue);
-            text-align: right;
-            background: #f0f7ff;
-            padding: 6px 12px;
-            border-radius: 8px;
-            min-width: 110px;
-        }
-
-        /* Mobile Tweak */
-        @media (max-width: 767px) {
-            .schedule-container { grid-template-columns: 1fr; }
-            .doc-name { font-size: 16px; }
-            .day-text { font-size: 13px; }
-            .time-text { font-size: 13px; min-width: 100px; }
-        }
-
-        /* --- PERBAIKAN BACKGROUND & ALIGNMENT --- */
-        /* Section Jadwal Dokter */
-        #team {
-            background: linear-gradient(to bottom, #f9fbff 0%, #f4f7fc 100%); /* Gradasi halus kebiruan */
-            padding: 80px 0;
-        }
-
-        /* Memastikan Judul Section Rata Tengah */
-        .section-title.text-center {
-            text-align: center;
-            margin-bottom: 50px;
-        }
-
-        .section-title.text-center h2 {
-            position: relative;
-            display: inline-block;
-            padding-bottom: 20px;
-        }
-
-        /* Menggeser garis bawah h2 ke tengah */
-        .section-title.text-center h2::after {
-            content: "";
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            margin-left: -30px; /* Setengah dari lebar garis (60px) */
-            width: 60px;
-            height: 3px;
-            background: var(--primary-blue);
-        }
-
-        /* Section Info Terbaru (Berita) juga diberi background beda biar tidak monoton */
-        #news {
-            background: #ffffff;
-        }
-
-     </style>
+    @media (max-width: 767px) {
+        .schedule-container { grid-template-columns: 1fr; }
+    }
+</style>
 
 </head>
 <body id="top" data-spy="scroll" data-target=".navbar-collapse" data-offset="50">
@@ -430,39 +249,82 @@
         </section>
 
 
-     <!-- NEWS -->
-    <section id="news">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-12 text-center">
-                    <div class="section-title">
-                        <h2>Info Terbaru</h2>
-                    </div>
+<!-- NEWS -->
+<section id="news" style="padding: 80px 0;">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center" style="margin-bottom: 50px;">
+                <div class="section-title">
+                    <h2>Info Terbaru</h2>
                 </div>
-                @forelse($news as $item)
-                    <div class="col-md-4 col-sm-12"> <!-- col-md-4 menjaga card tidak lonjong di desktop -->
-                        <div class="news-card wow fadeInUp" data-wow-delay="0.4s">
-                            <span>{{ \Carbon\Carbon::parse($item->date)->translatedFormat('d F Y') }}</span>
-                            <h3>{{ $item->title }}</h3>
-                            <p>{{ Str::limit($item->description, 150) }}</p>
-                            <div style="margin-top:auto; padding-top:15px; border-top:1px dotted #eee;">
-                                <strong>{{ $item->author_name }}</strong><br>
-                                <small class="text-muted">{{ $item->author_role }}</small>
-                            </div>
+            </div>
+
+            @forelse($news as $index => $item)
+                <div class="col-md-8 col-md-offset-2 col-sm-12">
+                    <div class="news-card wow fadeInUp" data-wow-delay="0.4s" style="padding: 40px; background: #fff; border-radius: 20px; border: 1px solid #f0f0f0; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 40px;">
+                        
+                        <span style="color: #007bff; font-weight: 700; font-size: 14px;">
+                            {{ \Carbon\Carbon::parse($item->date)->translatedFormat('d F Y') }}
+                        </span>
+                        <h3 style="font-size: 24px; font-weight: 700; margin: 15px 0;">{{ $item->title }}</h3>
+
+                        <!-- Teks Singkat (Yang muncul pertama) -->
+                        <div id="short-{{$index}}">
+                            <p style="color: #555; line-height: 1.8;">{{ Str::limit($item->description, 120) }}</p>
+                            <button onclick="toggleNews({{$index}})" style="background: none; border: none; color: #007bff; font-weight: 600; cursor: pointer; padding: 0;">
+                                Baca Lanjutan &darr;
+                            </button>
+                        </div>
+
+                        <!-- Teks Lengkap (Disembunyikan) -->
+                        <div id="full-{{$index}}" style="display: none;">
+                            <p style="color: #555; line-height: 1.8;">{!! nl2br(e($item->description)) !!}</p>
+                            <button onclick="toggleNews({{$index}})" style="background: none; border: none; color: #d9534f; font-weight: 600; cursor: pointer; padding: 0;">
+                                Tutup &uarr;
+                            </button>
+                        </div>
+
+                        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                            <strong>{{ $item->author_name }}</strong><br>
+                            <small class="text-muted">{{ $item->author_role }}</small>
                         </div>
                     </div>
-                @empty
-                    <p class="text-center">Belum ada info.</p>
-                @endforelse
+                </div>
+            @empty
+                <p class="text-center">Belum ada info.</p>
+            @endforelse
+        </div>
+    </div>
+</section>
+
+
+    <!-- GOOGLE MAP -->
+    <section id="google-map" style="padding-top: 80px;">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12 text-center" style="margin-bottom: 30px;">
+                    <div class="section-title">
+                        <h2>Lokasi Kami</h2>
+                        <p style="color: #666; font-size: 16px; margin-top: 10px;">
+                            Kunjungi kami di Apotek & Praktek Dokter Amelys
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-md-12">
+                    <div class="wow fadeInUp" data-wow-delay="0.4s" style="border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d316.4702061124213!2d111.46994462994563!3d-7.878259367276554!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e799f8bfa569b17%3A0x281e7821b4a9b844!2sApotek%20%26%20Praktek%20Dokter%20Amelys!5e0!3m2!1sid!2sus!4v1773306554147!5m2!1sid!2sus" 
+                            width="100%" 
+                            height="400" 
+                            frameborder="0" 
+                            style="border:0; display: block;" 
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+                </div>
             </div>
         </div>
-    </section>
-
-
-     <!-- GOOGLE MAP -->
-     <section id="google-map">
-          <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d316.4702061124213!2d111.46994462994563!3d-7.878259367276554!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e799f8bfa569b17%3A0x281e7821b4a9b844!2sApotek%20%26%20Praktek%20Dokter%20Amelys!5e0!3m2!1sid!2sus!4v1773306554147!5m2!1sid!2sus" width="100%" height="350" frameborder="0" style="border:0" allowfullscreen></iframe>
-     </section>            
+    </section>       
 
 
      <!-- FOOTER (Isi asli Tooplate) -->
@@ -525,6 +387,22 @@
      <script src="{{ asset('js/smoothscroll.js') }}"></script>
      <script src="{{ asset('js/owl.carousel.min.js') }}"></script>
      <script src="{{ asset('js/custom.js') }}"></script>
+
+     <!-- Script untuk buka-tutup News -->
+    <script>
+    function toggleNews(id) {
+        var shortText = document.getElementById('short-' + id);
+        var fullText = document.getElementById('full-' + id);
+        
+        if (fullText.style.display === "none") {
+            shortText.style.display = "none";
+            fullText.style.display = "block";
+        } else {
+            shortText.style.display = "block";
+            fullText.style.display = "none";
+        }
+    }
+    </script>
 
 </body>
 </html>

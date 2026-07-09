@@ -24,7 +24,7 @@ return new class extends Migration
             
             $table->string('action')->nullable();
 
-            $table->enum('status', ['approved', 'cancelled', 'completed'])
+            $table->enum('status', ['pending','approved', 'cancelled', 'completed'])
                 ->default('approved');
 
             $table->timestamps();

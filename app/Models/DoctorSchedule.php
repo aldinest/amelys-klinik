@@ -27,8 +27,8 @@ class DoctorSchedule extends Model
 
     public function approvedReservations()
     {
-        return $this->hasMany(Reservation::class)
-            ->where('status', 'approved');
+        // Jika masih dipakai di tempat lain, biarkan saja
+        return $this->hasMany(Reservation::class)->where('status', 'approved');
     }
 
     public function reservations()
@@ -36,11 +36,22 @@ class DoctorSchedule extends Model
         return $this->hasMany(Reservation::class);
     }
 
+    // Biarkan fungsi lama ada, tapi ubah isinya agar sinkron
     public function remainingQuota()
     {
-        return $this->quota - $this->reservations()
-            ->where('status', 'approved')
-            ->count();
+        // Mengalihkan ke logika baru yang sudah terpusat
+        return $this->remaining_quota; 
     }
+
+    // Gunakan ini sebagai satu-satunya standar penghitungan sisa kuota
+    public function getRemainingQuotaAttribute() 
+    {
+        // Memanggil scopeCountingQuota dari model Reservation
+        // Ini menjamin perhitungan selalu sinkron dengan definisi status valid Anda
+        $used = $this->reservations()->countingQuota()->count();
+                        
+        return ($this->quota ?? 5) - $used;
+    }
+
 
 }

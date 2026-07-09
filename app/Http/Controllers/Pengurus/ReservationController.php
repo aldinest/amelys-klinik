@@ -19,33 +19,36 @@ class ReservationController extends Controller
     {
         $doctors = Doctor::orderBy('name', 'asc')->get();
 
-        // 1. Inisialisasi Query
-        $query = DoctorSchedule::query()->with(['doctor', 'reservations']);
+        // 1. Inisialisasi Query dasar dengan withCount
+        $query = DoctorSchedule::query()->with(['doctor'])
+            ->withCount(['reservations as booked' => function($q) {
+                $q->countingQuota();
+            }]);
 
-        // 2. Filter Tanggal
-        if ($request->filled('start_date') && $request->filled('end_date')) {
-            // Jika dua-duanya diisi, cari di antara tanggal tersebut
-            $query->whereBetween('schedule_date', [$request->start_date, $request->end_date]);
-        } elseif ($request->filled('start_date')) {
-            // Jika CUMA start_date yang diisi, cari yang sama persis (Exact Match)
-            $query->whereDate('schedule_date', $request->start_date);
-        } elseif ($request->filled('end_date')) {
-            // Jika CUMA end_date yang diisi, cari yang sama persis juga
-            $query->whereDate('schedule_date', $request->end_date);
+        // 2. Filter Pasien (Gunakan if tunggal, jangan overwrite $query)
+        if ($request->filled('search_patient')) {
+            $query->whereHas('reservations.patient', function($q) use ($request) {
+                $q->where('name', 'LIKE', '%' . $request->search_patient . '%');
+            });
         }
 
-        // 3. Filter Dokter
+        // 3. Filter Tanggal (Dari & Sampai) - JANGAN tulis ulang $query = ...
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $query->whereBetween('schedule_date', [$request->start_date, $request->end_date]);
+        } elseif ($request->filled('start_date')) {
+            $query->whereDate('schedule_date', '>=', $request->start_date);
+        } elseif ($request->filled('end_date')) {
+            $query->whereDate('schedule_date', '<=', $request->end_date);
+        }
+
+        // 4. Filter Dokter
         if ($request->filled('doctor_id')) {
             $query->where('doctor_id', $request->doctor_id);
         }
 
-        // 4. Filter Status (Sinkron dengan Badge Selesai/Penuh/Tersedia)
+        // 5. Filter Status
         if ($request->filled('status')) {
-            $today = \Carbon\Carbon::today();
-            $query->withCount(['reservations as booked' => function($q) {
-                $q->whereIn('status', ['approved', 'completed']);
-            }]);
-
+            $today = Carbon::today();
             if ($request->status == 'selesai') {
                 $query->whereDate('schedule_date', '<', $today);
             } elseif ($request->status == 'penuh') {
@@ -56,9 +59,7 @@ class ReservationController extends Controller
             }
         }
 
-        // DEBUG DISINI UNTUK LIHAT HASIL AKHIR
-        // dd($query->toSql(), $query->getBindings()); 
-
+        // Eksekusi
         $schedules = $query->orderBy('schedule_date', 'desc')
                         ->paginate(10)
                         ->withQueryString();
@@ -70,24 +71,14 @@ class ReservationController extends Controller
     {
         $schedule = DoctorSchedule::findOrFail($request->schedule);
 
-        // Validasi Expired
-        if (Carbon::parse($schedule->schedule_date)->isPast() && !Carbon::parse($schedule->schedule_date)->isToday()) {
-            return redirect()->route('pengurus.reservations.index')
-                             ->with('error', 'Tidak dapat menambah pasien. Jadwal ini sudah berakhir.');
-        }
-
-        $usedQuota = $schedule->reservations()
-            ->whereIn('status', ['approved', 'completed'])
-            ->count();
-
-        if ($usedQuota >= $schedule->quota) {
+        // Gunakan atribut remaining_quota
+        if ($schedule->remaining_quota <= 0) {
             return redirect()->back()->with('error', 'Jadwal ini sudah penuh!');
         }
 
-        // Ambil pasien yang belum daftar di jadwal ini
+        // Gunakan scopeCountingQuota untuk mengambil pasien yang belum terdaftar
         $patients = Patient::whereDoesntHave('reservations', function ($q) use ($schedule) {
-                $q->where('doctor_schedule_id', $schedule->id)
-                  ->whereIn('status', ['approved', 'completed']);
+                $q->where('doctor_schedule_id', $schedule->id)->countingQuota();
             })
             ->orderBy('name')
             ->get();
@@ -105,25 +96,19 @@ class ReservationController extends Controller
 
         $schedule = DoctorSchedule::findOrFail($request->doctor_schedule_id);
 
-        // Security Check Expired
-        if (Carbon::parse($schedule->schedule_date)->isPast() && !Carbon::parse($schedule->schedule_date)->isToday()) {
-            return redirect()->route('pengurus.reservations.index')->with('error', 'Gagal. Jadwal sudah expired.');
-        }
-
-        // Validasi Kuota
-        $usedQuota = $schedule->reservations()->whereIn('status', ['approved', 'completed'])->count();
-        if ($usedQuota >= $schedule->quota) {
+        // Gunakan atribut remaining_quota
+        if ($schedule->remaining_quota <= 0) {
             return back()->with('error', 'Kuota jadwal sudah penuh.');
         }
 
-        // Cek Double Entry
+        // Gunakan scopeCountingQuota
         $exists = Reservation::where('doctor_schedule_id', $schedule->id)
             ->where('patient_id', $request->patient_id)
-            ->whereIn('status', ['approved', 'completed'])
+            ->countingQuota()
             ->exists();
 
         if ($exists) {
-            return back()->with('error', 'Pasien ini sudah terdaftar hari ini.');
+            return back()->with('error', 'Pasien ini sudah terdaftar di jadwal ini.');
         }
 
         Reservation::create([
@@ -133,32 +118,37 @@ class ReservationController extends Controller
             'action'             => $request->action,
         ]);
 
-        return redirect()
-            ->route('pengurus.reservations.show', $schedule->id)
-            ->with('success', 'Reservasi berhasil ditambahkan');
+        return redirect()->route('pengurus.reservations.show', $schedule->id)
+                         ->with('success', 'Reservasi berhasil ditambahkan');
     }
 
     public function show($doctorScheduleId)
     {
-        $schedule = DoctorSchedule::with([
-            'doctor',
-            'reservations.patient',
-            'reservations.medicalRecord'
-        ])->findOrFail($doctorScheduleId);
-
-        $usedQuota = $schedule->reservations()->whereIn('status', ['approved', 'completed'])->count();
+        $schedule = DoctorSchedule::with(['doctor', 'reservations.patient'])->findOrFail($doctorScheduleId);
+        
+        // Kelompokkan reservasi berdasarkan status untuk ditampilkan di tab-tab
         $reservations = $schedule->reservations;
+        
+        $data = [
+            'approved' => $reservations->where('status', 'approved'),
+            'completed' => $reservations->where('status', 'completed'),
+            'pending' => $reservations->where('status', 'pending'),
+            'cancelled' => $reservations->where('status', 'cancelled'),
+        ];
 
-        return view('pengurus.reservations.show', compact('schedule', 'reservations', 'usedQuota'));
+        // Hitung kuota yang terpakai (disetujui + pending)
+        $usedQuota = $reservations->whereIn('status', ['approved', 'completed', 'pending'])->count();
+
+        return view('pengurus.reservations.show', compact('schedule', 'data', 'usedQuota', 'reservations'));
     }
 
     public function cancel(Reservation $reservation)
     {
         if ($reservation->status === 'completed') {
-            return back()->with('error', 'Data sudah selesai diperiksa, tidak bisa dihapus');
+            return back()->with('error', 'Data sudah selesai diperiksa, tidak bisa dibatalkan');
         }
 
-        $reservation->delete();
+        $reservation->update(['status' => 'cancelled']);
         return back()->with('success', 'Reservasi berhasil dibatalkan');
     }
 
@@ -203,17 +193,24 @@ class ReservationController extends Controller
     public function approve($id)
     {
         $res = Reservation::findOrFail($id);
+        $schedule = $res->doctorSchedule;
+
+        // Cek kuota lagi sebelum konfirmasi
+        $currentBooked = $schedule->reservations()->whereIn('status', ['approved', 'completed'])->count();
+        
+        if ($currentBooked >= $schedule->quota) {
+            return back()->with('error', 'Tidak bisa menyetujui, kuota sudah penuh!');
+        }
+
         $res->update(['status' => 'approved']);
-        return back()->with('success', 'Reservasi pasien telah disetujui.');
+        return back()->with('success', 'Reservasi berhasil disetujui.');
     }
 
     public function reject($id)
     {
         $res = Reservation::findOrFail($id);
-        // Kita bisa hapus reservasi atau ubah statusnya jadi 'cancelled'
         $res->update(['status' => 'cancelled']); 
-        
-        return back()->with('success', 'Reservasi pasien telah ditolak.');
+        return back()->with('success', 'Reservasi telah ditolak.');
     }
 
 }

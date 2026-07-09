@@ -18,10 +18,14 @@
                         </div>
                         <div class="card-body">
                             @php
+                                // Pastikan variabel ini ada di bagian atas sebelum tab digunakan
                                 $approvedCount = $reservations->where('status', 'approved')->count();
                                 $completedCount = $reservations->where('status', 'completed')->count();
-                                $cancelledCount = $reservations->where('status', 'cancelled')->count();
-                                $sisaSlot = $schedule->quota - ($approvedCount + $completedCount);
+                                $cancelledCount = $reservations->where('status', 'cancelled')->count(); // <--- Pastikan baris ini ada
+                                $pendingCount = $reservations->where('status', 'pending')->count();     // <--- Pastikan baris ini ada
+                                
+                                // Sesuaikan rumus sisa slot jika diperlukan
+                                $sisaSlot = $schedule->quota - ($approvedCount + $pendingCount + $completedCount);
                             @endphp
                             <div class="row">
                                 <div class="col-6 col-md-3 mb-3">
@@ -71,6 +75,11 @@
                                         <i class="fas fa-times-circle mr-1 text-danger"></i> Dibatalkan ({{ $cancelledCount }})
                                     </a>
                                 </li>
+                                <li class="nav-item">
+                                    <a class="nav-link font-weight-bold" id="tabs-pending-tab" data-toggle="pill" href="#tabs-pending" role="tab">
+                                        <i class="fas fa-bell mr-1 text-warning"></i> Perlu Konfirmasi ({{ $reservations->where('status', 'pending')->count() }})
+                                    </a>
+                                </li>
                             </ul>
                         </div>
                         <div class="card-body p-0">
@@ -86,6 +95,10 @@
                                 {{-- TAB: CANCELLED --}}
                                 <div class="tab-pane fade" id="tabs-cancelled" role="tabpanel">
                                     @include('layouts.partials._table', ['data' => $reservations->where('status', 'cancelled'), 'statusType' => 'cancelled'])
+                                </div>
+                                {{-- TAB: PENDING --}}
+                                <div class="tab-pane fade" id="tabs-pending" role="tabpanel">
+                                    @include('layouts.partials._table', ['data' => $reservations->where('status', 'pending'), 'statusType' => 'pending'])
                                 </div>
                             </div>
                         </div>

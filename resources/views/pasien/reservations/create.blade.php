@@ -108,6 +108,50 @@
     padding: 20px;
     border: 1px solid #e9ecef;
     }
+
+    /* Update CSS */
+.sched-btn {
+    width: 100%;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 2px;
+    font-size: 10px;
+    cursor: pointer;
+    color: #fff;
+    display: flex;
+    justify-content: center; /* Teks jam di tengah */
+    align-items: center;
+    font-weight: bold;
+}
+
+@media (max-width: 768px) {
+    .calendar-table td {
+        height: 65px !important; /* Tinggi sel lebih compact */
+        padding: 2px !important;
+    }
+    
+    /* Tombol jadi lebih minimalis */
+    .sched-btn {
+        height: 24px; /* Tinggi tombol tetap */
+        font-size: 9px;
+    }
+    
+    /* Sembunyikan semua teks panjang, tampilkan hanya jam atau status singkat */
+    .sched-btn span {
+        display: none; 
+    }
+    
+    /* Opsional: Jika ingin tetap tampilkan status, gunakan dot saja */
+    .sched-btn::after {
+        content: '';
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: white;
+        margin-left: 4px;
+        display: none; /* Aktifkan jika ingin ada titik indikator */
+    }
+}
 </style>
 
 <div class="content-wrapper">
@@ -142,7 +186,7 @@
                                     <i class="fas fa-users"></i>
                                 </div>
                                 <div class="doc-meta-name">Semua</div>
-                                <div class="doc-meta-spec">Dokter</div>
+                                <div class="doc-meta-spec">Kalender</div>
                             </div>
 
                             @foreach($doctors as $doctor)
@@ -295,23 +339,46 @@ $(document).ready(function() {
         }
     }
 
-    // 2. FUNGSI FETCH DATA
-    window.fetchSchedules = function() {
-        let docId = hiddenDocInput.val();
-        if (!docId) { 
-            renderCalendar(filterMonth.value, filterYear.value, []); 
-            return; 
-        }
-
-        calendarBody.innerHTML = '<tr><td colspan="7" class="text-center py-5"><div class="spinner-border text-primary"></div></td></tr>';
-        
-        fetch(`{{ url('/pasien/reservations/calendar') }}/${docId}`)
-            .then(r => r.json())
-            .then(data => renderCalendar(filterMonth.value, filterYear.value, data))
-            .catch(() => { 
-                calendarBody.innerHTML = '<tr><td colspan="7" class="text-center text-danger py-4">Gagal memuat jadwal.</td></tr>'; 
-            });
+    // Tambahkan fungsi ini tepat setelah fungsi renderCalendar selesai
+    function renderEmptyCalendar() {
+        calendarBody.innerHTML = '<tr><td colspan="7" class="text-center py-5 text-muted">Silakan pilih dokter untuk melihat jadwal.</td></tr>';
     }
+    
+    // 2. FUNGSI FETCH DATA
+    // Variabel untuk menyimpan dokter yang sedang dipilih
+    let currentDoctorId = null;
+
+    // Fungsi untuk menangani klik dokter
+    function onDoctorSelected(doctorId) {
+        currentDoctorId = doctorId;
+        
+        // Langsung panggil fetch untuk ambil data jadwal dokter tersebut
+        fetchSchedules(currentDoctorId); 
+    }
+
+    // Update fungsi fetchSchedules
+   window.fetchSchedules = function(docId) {
+    // Gunakan nilai dari input, jika kosong gunakan nilai default
+    let month = $('#filterMonth').val(); 
+    let year = $('#filterYear').val();
+
+    // Jika docId tidak dikirim (saat page load), coba ambil dari hidden input
+    if (!docId) docId = $('#doctorSelect').val();
+
+    if (!docId) {
+        renderEmptyCalendar();
+        return;
+    }
+
+    let url = "{{ url('/pasien/reservations/calendar') }}/" + docId + "?month=" + month + "&year=" + year;
+    
+    fetch(url)
+        .then(r => r.json())
+        .then(data => {
+            renderCalendar(month, year, data);
+        })
+        .catch(err => console.error("Error:", err));
+}
 
     // 3. FUNGSI PILIH JADWAL
     function selectSched(s) {
@@ -356,7 +423,9 @@ $(document).ready(function() {
         
         var doctorId = $(this).attr('data-id');
         hiddenDocInput.val(doctorId);
-        fetchSchedules();
+        
+        // PANGGIL FUNGSI INI DENGAN ID DOKTER
+        fetchSchedules(doctorId); 
     });
 
     // 5. EVENT LISTENER LAINNYA

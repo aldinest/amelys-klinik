@@ -145,7 +145,7 @@ Route::middleware(['auth', 'role:pasien'])
         
         // Reservasi & Kalender
         Route::resource('reservations', PasienReservation::class);
-        Route::get('reservations/calendar/{doctor}', [PasienReservation::class, 'calendar'])->name('reservations.calendar');
+        Route::get('reservations/calendar/{doctor?}', [PasienReservation::class, 'calendar'])->name('reservations.calendar');
         
         // Rekam Medis Pribadi
         Route::resource('medical-records', PasienMedicalRecord::class);
