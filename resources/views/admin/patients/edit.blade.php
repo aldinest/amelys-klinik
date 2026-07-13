@@ -77,7 +77,8 @@
                                 <div class="form-group">
                                     <label class="text-muted text-uppercase small font-weight-bold">Tanggal Lahir</label>
                                     <input type="date" name="date_of_birth" class="form-control"
-                                        value="{{ old('date_of_birth', $patient->date_of_birth) }}" required>
+                                        value="{{ old('date_of_birth', $patient->date_of_birth ? \Carbon\Carbon::parse($patient->date_of_birth)->format('Y-m-d') : '') }}" 
+                                        required>
                                 </div>
                             </div>
                         </div>

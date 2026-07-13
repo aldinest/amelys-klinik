@@ -44,7 +44,6 @@
         <div class="container-fluid">
             <div class="card shadow-sm">
                 <div class="card-header bg-white py-3">
-                    {{-- Responsif Header --}}
                     <div class="d-flex justify-content-between align-items-center flex-wrap" style="gap: 15px;">
                         <a href="{{ route('admin.doctors.create') }}" class="btn btn-primary shadow-sm">
                             <i class="fas fa-plus-circle mr-1"></i> Tambah Dokter
@@ -66,8 +65,8 @@
                     </div>
                 </div>
 
-                {{-- TABLE BODY --}}
-                <div class="card-body p-0">
+                {{-- TABLE BODY (Desktop - d-none d-md-block) --}}
+                <div class="card-body p-0 d-none d-md-block">
                     <div class="table-responsive">
                         <table class="table table-bordered table-striped mb-0">
                             <thead class="bg-light">
@@ -83,51 +82,59 @@
                             <tbody>
                                 @forelse ($doctors as $doctor)
                                     <tr>
-                                        <td class="text-center align-middle">
-                                            {{ $loop->iteration + ($doctors->currentPage() - 1) * $doctors->perPage() }}
-                                        </td>
+                                        <td class="text-center align-middle">{{ $loop->iteration + ($doctors->currentPage() - 1) * $doctors->perPage() }}</td>
                                         <td class="align-middle font-weight-bold">{{ $doctor->name }}</td>
                                         <td class="align-middle">{{ $doctor->address }}</td>
                                         <td class="align-middle">{{ $doctor->specialist }}</td>
                                         <td class="text-center align-middle">
-                                            @if ($doctor->status === 'aktif')
-                                                <span class="badge badge-pill badge-success px-3">Aktif</span>
-                                            @else
-                                                <span class="badge badge-pill badge-secondary px-3">Nonaktif</span>
-                                            @endif
+                                            <span class="badge badge-pill {{ $doctor->status === 'aktif' ? 'badge-success' : 'badge-secondary' }} px-3">
+                                                {{ ucfirst($doctor->status) }}
+                                            </span>
                                         </td>
                                         <td class="text-center align-middle">
                                             <div class="d-flex justify-content-center text-nowrap" style="gap: 5px;">
-                                                <a href="{{ route('admin.doctors.show', $doctor->id) }}" 
-                                                  class="btn btn-info btn-sm">
-                                                    <i class="fas fa-eye"></i> Detail
-                                                </a>
-                                                <a href="{{ route('admin.doctors.edit', $doctor->id) }}" 
-                                                  class="btn btn-warning btn-sm text-white">
-                                                    <i class="fas fa-edit"></i> Edit
-                                                </a>
-                                                <form action="{{ route('admin.doctors.destroy', $doctor->id) }}" method="POST"
-                                                      onsubmit="return confirm('Yakin mau hapus data ini?')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button class="btn btn-danger btn-sm" type="submit">
-                                                        <i class="fas fa-trash"></i> Hapus
-                                                    </button>
+                                                <a href="{{ route('admin.doctors.show', $doctor->id) }}" class="btn btn-info btn-sm"><i class="fas fa-eye"></i> Detail</a>
+                                                <a href="{{ route('admin.doctors.edit', $doctor->id) }}" class="btn btn-warning btn-sm text-white"><i class="fas fa-edit"></i> Edit</a>
+                                                <form action="{{ route('admin.doctors.destroy', $doctor->id) }}" method="POST" onsubmit="return confirm('Yakin mau hapus data ini?')">
+                                                    @csrf @method('DELETE')
+                                                    <button class="btn btn-danger btn-sm" type="submit"><i class="fas fa-trash"></i> Hapus</button>
                                                 </form>
                                             </div>
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr>
-                                        <td colspan="6" class="text-center py-5 text-muted">
-                                            <i class="fas fa-user-md fa-3x mb-3 opacity-25"></i><br>
-                                            Data dokter tidak ditemukan
-                                        </td>
-                                    </tr>
+                                    <tr><td colspan="6" class="text-center py-5 text-muted">Data dokter tidak ditemukan</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
                     </div>
+                </div>
+
+                {{-- CARD VIEW (Mobile - d-md-none) --}}
+                <div class="card-body p-3 d-md-none">
+                    @forelse ($doctors as $doctor)
+                        <div class="card mb-3 border shadow-none">
+                            <div class="card-body p-3">
+                                <h6 class="font-weight-bold mb-1">{{ $doctor->name }}</h6>
+                                <p class="text-muted small mb-2">{{ $doctor->specialist }} | {{ $doctor->address }}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge badge-pill {{ $doctor->status === 'aktif' ? 'badge-success' : 'badge-secondary' }} px-3">
+                                        {{ ucfirst($doctor->status) }}
+                                    </span>
+                                    <div class="d-flex" style="gap: 5px;">
+                                        <a href="{{ route('admin.doctors.show', $doctor->id) }}" class="btn btn-info btn-sm"><i class="fas fa-eye"></i></a>
+                                        <a href="{{ route('admin.doctors.edit', $doctor->id) }}" class="btn btn-warning btn-sm text-white"><i class="fas fa-edit"></i></a>
+                                        <form action="{{ route('admin.doctors.destroy', $doctor->id) }}" method="POST" onsubmit="return confirm('Hapus?')">
+                                            @csrf @method('DELETE')
+                                            <button class="btn btn-danger btn-sm" type="submit"><i class="fas fa-trash"></i></button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="text-center text-muted">Data dokter tidak ditemukan</div>
+                    @endforelse
                 </div>
 
                 {{-- FOOTER / PAGINATION --}}
@@ -153,29 +160,15 @@
 </div>
 
 <style>
-    /* Pagination Scrollable */
-    .pagination-responsive-wrapper {
-        display: flex;
-        justify-content: center;
-    }
-    @media (min-width: 768px) {
-        .pagination-responsive-wrapper { justify-content: flex-end; }
-    }
+    .pagination-responsive-wrapper { display: flex; justify-content: center; }
+    @media (min-width: 768px) { .pagination-responsive-wrapper { justify-content: flex-end; } }
     @media (max-width: 767.98px) {
-        .pagination-responsive-wrapper {
-            overflow-x: auto;
-            display: block;
-            white-space: nowrap;
-            padding: 5px 0;
-        }
+        .pagination-responsive-wrapper { overflow-x: auto; display: block; white-space: nowrap; padding: 5px 0; }
         .pagination-responsive-wrapper .pagination { display: inline-flex; margin-bottom: 0; }
     }
-    
-    /* Header & Button Fix */
     @media (max-width: 576px) {
         .card-header .btn { width: 100%; margin-bottom: 5px; }
         .input-group { width: 100% !important; }
-        .badge { font-size: 85%; }
     }
 </style>
 @endsection

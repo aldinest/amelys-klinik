@@ -83,85 +83,94 @@
                     </div>
                 </div>
 
-                {{-- TABLE BODY --}}
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-striped mb-0">
-                            <thead class="bg-light">
-                                <tr>
-                                    <th style="width: 50px" class="text-center">No</th>
-                                    <th>Nama</th>
-                                    <th>Alamat</th>
-                                    <th>Jenis Kelamin</th>
-                                    <th>Nomor HP</th>
-                                    <th style="width: 250px" class="text-center">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse ($patients as $patient)
-                                    <tr>
-                                        <td class="text-center align-middle">
-                                            {{ $loop->iteration + ($patients->currentPage() - 1) * $patients->perPage() }}
-                                        </td>
-                                        <td class="align-middle font-weight-bold">{{ $patient->name }}</td>
-                                        <td class="align-middle">{{ $patient->address }}</td>
+            {{-- TABLE BODY --}}
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    {{-- Tampilan Desktop --}}
+                    <table class="table table-bordered table-striped mb-0 d-none d-md-table">
+                        <thead class="bg-light">
+                            <tr>
+                                <th style="width: 50px" class="text-center">No</th>
+                                <th>Nama</th>
+                                <th>Alamat</th>
+                                <th>Jenis Kelamin</th>
+                                <th>Nomor HP</th>
+                                <th style="width: 250px" class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($patients as $patient)
+                            <tr>
+                                <td class="text-center align-middle">{{ $loop->iteration + ($patients->currentPage() - 1) * $patients->perPage() }}</td>
+                                <td class="align-middle font-weight-bold">{{ $patient->name }}</td>
+                                <td class="align-middle">{{ $patient->address }}</td>
+                                <td class="align-middle text-center">
+                                    @if($patient->gender == 'L') <span class="badge badge-info px-2 py-1">Laki-laki</span>
+                                    @else <span class="badge badge-danger px-2 py-1" style="background-color: #e83e8c;">Perempuan</span> @endif
+                                </td>
+                                <td class="align-middle font-weight-bold">
+                                    @php
+                                        $nomorBersih = preg_replace('/[^0-9]/', '', $patient->phone);
+                                        $nomorWA = (substr($nomorBersih, 0, 1) === '0') ? '62' . substr($nomorBersih, 1) : $nomorBersih;
+                                    @endphp
+                                    <a href="https://wa.me/{{ $nomorWA }}" target="_blank" class="text-dark">
+                                        <i class="fab fa-whatsapp text-success mr-1"></i>{{ $patient->phone }}
+                                    </a>
+                                </td>
+                                <td class="text-center align-middle">
+                                    <div class="d-flex justify-content-center text-nowrap" style="gap: 5px;">
+                                        <a href="{{ route('admin.patients.show', $patient->id) }}" class="btn btn-info btn-sm"><i class="fas fa-eye"></i></a>
+                                        <a href="{{ route('admin.patients.edit', $patient->id) }}" class="btn btn-warning btn-sm text-white"><i class="fas fa-edit"></i></a>
+                                        <form action="{{ route('admin.patients.destroy', $patient->id) }}" method="POST" onsubmit="return confirm('Yakin?')">
+                                            @csrf @method('DELETE')
+                                            <button class="btn btn-danger btn-sm" type="submit"><i class="fas fa-trash"></i></button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
 
-                                        {{-- 1. BAGIAN JENIS KELAMIN (DENGAN BADGE AGAR LEBIH RAPI) --}}
-                                        <td class="align-middle text-center">
-                                            @if($patient->gender == 'L')
-                                                <span class="badge badge-info px-2 py-1">Laki-laki</span>
-                                            @else
-                                                <span class="badge badge-danger px-2 py-1" style="background-color: #e83e8c;">Perempuan</span>
-                                            @endif
-                                        </td>
-
-                                        {{-- 2. BAGIAN NOMOR HP (DENGAN LOGIKA WHATSAPP) --}}
-                                        <td class="align-middle font-weight-bold">
-                                            @php
-                                                // Membersihkan karakter non-angka dan mengubah 0 ke 62
-                                                $nomorBersih = preg_replace('/[^0-9]/', '', $patient->phone);
-                                                if (substr($nomorBersih, 0, 1) === '0') {
-                                                    $nomorWA = '62' . substr($nomorBersih, 1);
-                                                } else {
-                                                    $nomorWA = $nomorBersih;
-                                                }
-                                            @endphp
-                                            <a href="https://wa.me/{{ $nomorWA }}" target="_blank" class="text-dark">
-                                                <i class="fab fa-whatsapp text-success mr-1"></i>{{ $patient->phone }}
-                                            </a>
-                                        </td>
-
-                                        <td class="text-center align-middle">
-                                            <div class="d-flex justify-content-center text-nowrap" style="gap: 5px;">
-                                                <a href="{{ route('admin.patients.show', $patient->id) }}" class="btn btn-info btn-sm">
-                                                    <i class="fas fa-eye"></i> Detail
-                                                </a>
-                                                <a href="{{ route('admin.patients.edit', $patient->id) }}" class="btn btn-warning btn-sm text-white">
-                                                    <i class="fas fa-edit"></i> Edit
-                                                </a>
-                                                <form action="{{ route('admin.patients.destroy', $patient->id) }}" method="POST"
-                                                    onsubmit="return confirm('Yakin mau hapus data ini?')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button class="btn btn-danger btn-sm" type="submit">
-                                                        <i class="fas fa-trash"></i> Hapus
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="6" class="text-center py-5 text-muted">
-                                            <i class="fas fa-users fa-3x mb-3 opacity-25"></i><br>
-                                            Data pasien tidak ditemukan
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                    {{-- Tampilan Mobile (Card Style) --}}
+                    <div class="d-md-none">
+                        @forelse ($patients as $patient)
+                            <div class="p-3 border-bottom">
+                                {{-- Menggunakan d-flex agar nama dan badge sejajar --}}
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="font-weight-bold text-primary mb-0">{{ $patient->name }}</h6>
+                                    
+                                    {{-- Badge dengan margin-left agar tidak terlalu menempel ke sisi kanan --}}
+                                    <span class="badge {{ $patient->gender == 'L' ? 'badge-info' : 'badge-danger' }} px-2 py-1 ml-2">
+                                        {{ $patient->gender == 'L' ? 'Laki-laki' : 'Perempuan' }}
+                                    </span>
+                                </div>
+                                
+                                <p class="mb-1 small text-muted">
+                                    <i class="fas fa-map-marker-alt mr-1"></i> {{ $patient->address }}
+                                </p>
+                                
+                                <p class="mb-2">
+                                    @php
+                                        $nomorBersih = preg_replace('/[^0-9]/', '', $patient->phone);
+                                        $nomorWA = (substr($nomorBersih, 0, 1) === '0') ? '62' . substr($nomorBersih, 1) : $nomorBersih;
+                                    @endphp
+                                    <a href="https://wa.me/{{ $nomorWA }}" class="text-dark small">
+                                        <i class="fab fa-whatsapp text-success mr-1"></i> {{ $patient->phone }}
+                                    </a>
+                                </p>
+                                
+                                <div class="d-flex" style="gap: 5px;">
+                                    <a href="{{ route('admin.patients.show', $patient->id) }}" class="btn btn-sm btn-outline-info flex-fill">Detail</a>
+                                    <a href="{{ route('admin.patients.edit', $patient->id) }}" class="btn btn-sm btn-outline-warning flex-fill">Edit</a>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="p-3 text-center text-muted">Data tidak ditemukan</div>
+                        @endforelse
                     </div>
                 </div>
+            </div>
 
                 {{-- FOOTER / PAGINATION --}}
                 <div class="card-footer bg-white py-3">

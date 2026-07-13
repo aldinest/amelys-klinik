@@ -10,16 +10,20 @@
         </div>
     </div>
 
-    {{-- Tampilan Mobile (Sangat Ringkas atau Hidden) --}}
-    <div class="d-md-none text-center pb-5"> 
-        <small class="text-muted">&copy; {{ date('Y') }} Amelys Klinik</small>
+    {{-- Tampilan Mobile (Diberi padding lebih besar agar tidak mepet konten) --}}
+    <div class="d-md-none text-center py-4"> 
+        <small class="text-muted d-block">&copy; {{ date('Y') }} Amelys Klinik</small>
+        <small class="text-muted">Layanan Kesehatan Terpercaya</small>
     </div>
 </footer>
 
 <style>
     @media (max-width: 768px) {
-        /* Jika user adalah pasien, kita sembunyikan footer total di mobile 
-           karena sudah ada Bottom Navigation */
+        /* Memberikan jarak antara konten terakhir dengan bagian bawah layar */
+        .content-wrapper {
+            padding-bottom: 30px; 
+        }
+
         @if(auth()->user()->role === 'pasien')
         .main-footer {
             display: none !important;
@@ -27,11 +31,14 @@
         @endif
     }
 
-    /* Penyesuaian margin jika sidebar off */
+    /* Penyesuaian khusus untuk footer agar lebih longgar */
+    .main-footer {
+        padding: 20px 10px;
+    }
+
     @if(auth()->user()->role === 'pasien')
     .main-footer {
         margin-left: 0 !important;
-        padding: 15px 5%;
         background-color: transparent !important;
         border-top: 1px solid #eef2f7 !important;
     }
