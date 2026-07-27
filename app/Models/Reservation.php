@@ -49,5 +49,10 @@ class Reservation extends Model
         return $this->hasMany(ReservationAction::class);
     }
 
+    public function user() 
+    {
+        return $this->belongsTo(User::class, 'user_id'); // Pastikan foreign key benar
+    }
+
 
 }

@@ -172,6 +172,13 @@ Route::get('/dashboard', function () {
     abort(403);
 })->middleware(['auth'])->name('dashboard');
 
+Route::middleware(['auth'])->group(function () {
+    Route::post('/notifications/mark-as-read', function () {
+        auth()->user()->unreadNotifications->markAsRead();
+        return response()->json(['status' => 'success']);
+    })->name('notifications.markAsRead');
+});
+
 /**
  * AUTH PROFILE (DEFAULT LARAVEL BREEZE/JETSTREAM)
  */

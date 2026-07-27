@@ -1,0 +1,10 @@
+    /* Paksa dropdown tetap di ukuran yang ditentukan */
+    .dropdown-menu-lg {
+        min-width: 320px !important;
+        max-width: 320px !important; /* Batasi lebar maksimal */
+    }
+
+    .dropdown-item {
+        white-space: normal !important; /* Izinkan teks turun ke bawah */
+        word-wrap: break-word !important; /* Paksa kata yang sangat panjang untuk turun */
+    }

@@ -163,7 +163,7 @@
                                             @endif
                                         </td>
                                         <td>
-                                            <div><i class="far fa-calendar-alt mr-1 text-muted"></i> {{ \Carbon\Carbon::parse($schedule->schedule_date)->translatedFormat('d M Y') }}</div>
+                                            <div><i class="far fa-calendar-alt mr-1 text-muted"></i> {{ \Carbon\Carbon::parse($schedule->schedule_date)->translatedFormat('l, d M Y') }}</div>
                                             <div class="small text-muted"><i class="far fa-clock mr-1"></i> {{ $schedule->start_time }} - {{ $schedule->end_time }}</div>
                                         </td>
                                         <td class="text-center">

@@ -7,6 +7,8 @@ use App\Models\Reservation;
 use App\Models\DoctorSchedule;
 use App\Models\Doctor; 
 use App\Models\Patient;
+use App\Models\User;
+use App\Notifications\ReservationCancelled;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Exports\ReservationsExport;
@@ -210,6 +212,18 @@ class ReservationController extends Controller
     {
         $res = Reservation::findOrFail($id);
         $res->update(['status' => 'cancelled']); 
+
+        // Menggunakan relasi yang baru saja dibuat
+        $pasien = $res->user; 
+
+        if ($pasien) {
+            $details = [
+                'tanggal' => \Carbon\Carbon::parse($res->tanggal_reservasi)->format('d-m-Y'),
+            ];
+            
+            $pasien->notify(new \App\Notifications\ReservationCancelled($details));
+        }
+
         return back()->with('success', 'Reservasi telah ditolak.');
     }
 

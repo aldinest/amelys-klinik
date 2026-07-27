@@ -6,9 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\DoctorSchedule;
 use App\Models\Doctor;
 use App\Models\Reservation;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use App\Notifications\ReservasiNotification;
+use App\Notifications\ReservationCancelled;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 
 class ReservationController extends Controller
 {
@@ -80,49 +84,54 @@ class ReservationController extends Controller
             'action' => 'required|string|max:1000',
         ]);
 
-        $schedule = DoctorSchedule::findOrFail($request->doctor_schedule_id);
-        $patient  = auth()->user()->patient;
+        return DB::transaction(function () use ($request) {
+            $schedule = DoctorSchedule::lockForUpdate()->findOrFail($request->doctor_schedule_id);
+            $patient  = auth()->user()->patient;
 
-        // 1. Cek kuota dengan atribut model
-        if ($schedule->remaining_quota <= 0) {
-            return back()->with('error', 'Kuota jadwal ini sudah penuh.');
-        }
+            // 1. Cek kuota
+            if ($schedule->remaining_quota <= 0) {
+                return back()->with('error', 'Kuota jadwal ini sudah penuh.');
+            }
 
-        // 2. Cegah double booking dengan scope
-        $exists = Reservation::where('doctor_schedule_id', $schedule->id)
-            ->where('patient_id', $patient->id)
-            ->countingQuota() // Gunakan scope agar konsisten
-            ->exists();
+            // 2. Cegah double booking
+            if (Reservation::where('doctor_schedule_id', $schedule->id)
+                ->where('patient_id', $patient->id)
+                ->countingQuota()->exists()) {
+                return back()->with('error', 'Kamu sudah memiliki reservasi di jadwal ini.');
+            }
 
-        if ($exists) {
-            return back()->with('error', 'Kamu sudah memiliki reservasi di jadwal ini.');
-        }
+            // 3. Logika status (Pending jika sudah ada reservasi bulan ini)
+            $hasMonthlyReservation = Reservation::where('patient_id', $patient->id)
+                ->whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year)
+                ->countingQuota()
+                ->exists();
 
-        // 3. Logika Monthly Reservation
-        $hasMonthlyReservation = Reservation::where('patient_id', $patient->id)
-            ->whereMonth('created_at', now()->month)
-            ->whereYear('created_at', now()->year)
-            ->countingQuota() // Gunakan scope agar batal/reject tidak terhitung
-            ->exists();
+            $status = $hasMonthlyReservation ? 'pending' : 'approved';
 
-        // Jika sudah pernah, statusnya 'pending', jika belum, 'approved'
-        $status = $hasMonthlyReservation ? 'pending' : 'approved';
+            // 4. Simpan Reservasi
+            $reservation = Reservation::create([
+                'doctor_schedule_id' => $schedule->id,
+                'patient_id' => $patient->id,
+                'action' => $request->action,
+                'status' => $status,
+            ]);
 
-        // 4. Simpan Reservasi
-        Reservation::create([
-            'doctor_schedule_id' => $schedule->id,
-            'patient_id' => $patient->id,
-            'action' => $request->action,
-            'status' => $status,
-        ]);
+            // 5. Kirim Notifikasi ke Pengurus
+            // Kita gunakan load agar relasi siap di toArray Notification
+            $reservation->load(['patient', 'doctorSchedule.doctor']);
+            
+            $pengurus = User::where('role', 'pengurus')->get();
+            Notification::send($pengurus, new ReservasiNotification($reservation));
 
-        $message = $status === 'pending' 
-            ? 'Reservasi berhasil dibuat dan sedang menunggu konfirmasi pengurus.' 
-            : 'Reservasi berhasil dibuat.';
+            $message = $status === 'pending' 
+                ? 'Reservasi berhasil dibuat dan sedang menunggu konfirmasi pengurus.' 
+                : 'Reservasi berhasil dibuat.';
 
-        return redirect()
-            ->route('pasien.reservations.index')
-            ->with('success', $message);
+            return redirect()
+                ->route('pasien.reservations.index')
+                ->with('success', $message);
+        });
     }
 
     public function destroy(Reservation $reservation)
