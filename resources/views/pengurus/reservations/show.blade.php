@@ -80,6 +80,11 @@
                                         <i class="fas fa-bell mr-1 text-warning"></i> Perlu Konfirmasi ({{ $reservations->where('status', 'pending')->count() }})
                                     </a>
                                 </li>
+                                <li class="nav-item">
+                                    <a class="nav-link font-weight-bold" id="tabs-walkins-tab" data-toggle="pill" href="#tabs-walkins" role="tab">
+                                        <i class="fas fa-walking mr-1 text-secondary"></i> Walk-in ({{ $walkIns->count() }})
+                                    </a>
+                                </li>
                             </ul>
                         </div>
                         <div class="card-body p-0">
@@ -99,6 +104,10 @@
                                 {{-- TAB: PENDING --}}
                                 <div class="tab-pane fade" id="tabs-pending" role="tabpanel">
                                     @include('layouts.partials._table', ['data' => $reservations->where('status', 'pending'), 'statusType' => 'pending'])
+                                </div>
+                                {{-- TAB: WALK-IN --}}
+                                <div class="tab-pane fade" id="tabs-walkins" role="tabpanel">
+                                    @include('pengurus.reservations._walkins_table', ['data' => $walkIns])
                                 </div>
                             </div>
                         </div>

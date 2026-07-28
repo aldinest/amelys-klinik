@@ -13,6 +13,7 @@ class MedicalRecord extends Model
         'patient_id',
         'doctor_id',
         'reservation_id',
+        'doctor_schedule_id',
         'examined_at',
         'complaint',
         'diagnosis',
@@ -47,6 +48,14 @@ class MedicalRecord extends Model
     public function reservation()
     {
         return $this->belongsTo(Reservation::class);
+    }
+
+    /**
+     * Medical record may belong to a doctor schedule for walk-in cases
+     */
+    public function doctorSchedule()
+    {
+        return $this->belongsTo(DoctorSchedule::class);
     }
 
 }

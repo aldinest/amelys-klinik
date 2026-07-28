@@ -40,6 +40,9 @@
 
     <section class="content px-3">
         <div class="container-fluid">
+            @php
+                $patientInfo = $medicalRecord->reservation->patient ?? $medicalRecord->patient;
+            @endphp
             {{-- Identitas Pasien --}}
             <div class="card shadow-sm mb-4" style="border-top: 3px solid #007bff; border-radius: 0;">
                 <div class="card-header bg-white py-3">
@@ -51,21 +54,23 @@
                     <div class="row">
                         <div class="col-md-6 border-right">
                             <table class="table table-sm table-borderless mb-0">
-                                <tr style="height: 35px;"><td width="40%" class="text-muted">No. Rekam Medis</td><td>: <strong>{{ $medicalRecord->reservation->patient->medical_record_number }}</strong></td></tr>
-                                <tr style="height: 35px;"><td class="text-muted">Nama Pasien</td><td>: {{ $medicalRecord->reservation->patient->name }}</td></tr>
-                                <tr style="height: 35px;"><td class="text-muted">Jenis Kelamin</td><td>: {{ $medicalRecord->reservation->patient->gender == 'L' ? 'Laki-laki' : 'Perempuan' }}</td></tr>
+                                <tr style="height: 35px;"><td width="40%" class="text-muted">No. Rekam Medis</td><td>: <strong>{{ $patientInfo->medical_record_number ?? '-' }}</strong></td></tr>
+                                <tr style="height: 35px;"><td class="text-muted">Nama Pasien</td><td>: {{ $patientInfo->name ?? '-' }}</td></tr>
+                                <tr style="height: 35px;"><td class="text-muted">Jenis Kelamin</td><td>: {{ $patientInfo->gender === 'L' ? 'Laki-laki' : ($patientInfo->gender === 'P' ? 'Perempuan' : '-') }}</td></tr>
                             </table>
                         </div>
                         <div class="col-md-6">
                             <table class="table table-sm table-borderless mb-0">
                                 <tr style="height: 35px;">
                                     <td width="40%" class="text-muted">Tgl Lahir / Usia</td>
-                                    <td>: {{ \Carbon\Carbon::parse($medicalRecord->reservation->patient->date_of_birth)->format('Y-m-d') }} 
-                                        <small class="text-muted">({{ \Carbon\Carbon::parse($medicalRecord->reservation->patient->date_of_birth)->age }} Thn)</small>
+                                    <td>: {{ $patientInfo->date_of_birth ? \Carbon\Carbon::parse($patientInfo->date_of_birth)->format('Y-m-d') : '-' }} 
+                                        @if($patientInfo->date_of_birth)
+                                            <small class="text-muted">({{ \Carbon\Carbon::parse($patientInfo->date_of_birth)->age }} Thn)</small>
+                                        @endif
                                     </td>
                                 </tr>
-                                <tr style="height: 35px;"><td class="text-muted">No. Telepon</td><td>: {{ $medicalRecord->reservation->patient->phone }}</td></tr>
-                                <tr style="height: 35px;"><td class="text-muted">Alamat</td><td>: {{ $medicalRecord->reservation->patient->address }}</td></tr>
+                                <tr style="height: 35px;"><td class="text-muted">No. Telepon</td><td>: {{ $patientInfo->phone ?? '-' }}</td></tr>
+                                <tr style="height: 35px;"><td class="text-muted">Alamat</td><td>: {{ $patientInfo->address ?? '-' }}</td></tr>
                             </table>
                         </div>
                     </div>
@@ -100,7 +105,9 @@
                                         <div class="font-weight-bold">{{ $row->created_at->format('d/m/Y') }}</div>
                                         <small class="text-muted">{{ $row->created_at->format('H:i') }}</small>
                                     </td>
-                                    <td class="py-4 text-muted">dr. {{ $row->reservation->doctorSchedule->doctor->name }}</td>
+                                    <td class="py-4 text-muted">
+                                        dr. {{ optional(optional($row->reservation)->doctorSchedule)->doctor->name ?? optional($row->doctor)->name ?? '-' }}
+                                    </td>
                                     <td class="py-4 text-muted text-left" style="max-width: 200px;">{{ $row->complaint }}</td>
                                     <td class="py-4 font-weight-bold" style="color: #c0392b;">{{ $row->diagnosis }}</td>
                                     <td class="py-4 font-weight-bold" style="color: #27ae60;">{{ $row->treatment }}</td>
@@ -126,7 +133,7 @@
                                     </span>
                                     <a href="{{ route('pengurus.medical-records.edit', $row->id) }}" class="btn btn-warning btn-xs shadow-sm"><i class="fas fa-edit"></i></a>
                                 </div>
-                                <div class="mb-2"><small class="text-muted d-block uppercase font-weight-bold" style="font-size: 0.65rem;">DOKTER</small><span class="text-dark font-weight-bold">dr. {{ $row->reservation->doctorSchedule->doctor->name }}</span></div>
+                                <div class="mb-2"><small class="text-muted d-block uppercase font-weight-bold" style="font-size: 0.65rem;">DOKTER</small><span class="text-dark font-weight-bold">dr. {{ optional(optional($row->reservation)->doctorSchedule)->doctor->name ?? optional($row->doctor)->name ?? '-' }}</span></div>
                                 <div class="row mb-2">
                                     <div class="col-6"><small class="text-muted d-block font-weight-bold" style="font-size: 0.65rem;">DIAGNOSA</small><span style="color: #c0392b; font-weight: bold; font-size: 0.9rem;">{{ $row->diagnosis }}</span></div>
                                     <div class="col-6"><small class="text-muted d-block font-weight-bold" style="font-size: 0.65rem;">TINDAKAN</small><span style="color: #27ae60; font-weight: bold; font-size: 0.9rem;">{{ $row->treatment }}</span></div>

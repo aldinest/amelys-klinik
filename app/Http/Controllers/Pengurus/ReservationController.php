@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Pengurus;
 
 use App\Http\Controllers\Controller;
 use App\Models\Reservation;
+use App\Models\MedicalRecord;
 use App\Models\DoctorSchedule;
 use App\Models\Doctor; 
 use App\Models\Patient;
@@ -138,10 +139,23 @@ class ReservationController extends Controller
             'cancelled' => $reservations->where('status', 'cancelled'),
         ];
 
+        $walkIns = MedicalRecord::with('patient', 'doctor')
+            ->whereNull('reservation_id')
+            ->where(function ($query) use ($schedule) {
+                $query->where('doctor_schedule_id', $schedule->id)
+                    ->orWhere(function ($query) use ($schedule) {
+                        $query->whereNull('doctor_schedule_id')
+                              ->where('doctor_id', $schedule->doctor_id)
+                              ->whereDate('examined_at', $schedule->schedule_date);
+                    });
+            })
+            ->latest('examined_at')
+            ->get();
+
         // Hitung kuota yang terpakai (disetujui + pending)
         $usedQuota = $reservations->whereIn('status', ['approved', 'completed', 'pending'])->count();
 
-        return view('pengurus.reservations.show', compact('schedule', 'data', 'usedQuota', 'reservations'));
+        return view('pengurus.reservations.show', compact('schedule', 'data', 'usedQuota', 'reservations', 'walkIns'));
     }
 
     public function cancel(Reservation $reservation)

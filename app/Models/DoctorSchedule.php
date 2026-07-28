@@ -36,6 +36,11 @@ class DoctorSchedule extends Model
         return $this->hasMany(Reservation::class);
     }
 
+    public function medicalRecords()
+    {
+        return $this->hasMany(MedicalRecord::class);
+    }
+
     // Biarkan fungsi lama ada, tapi ubah isinya agar sinkron
     public function remainingQuota()
     {
