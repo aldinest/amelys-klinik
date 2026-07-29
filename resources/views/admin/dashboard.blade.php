@@ -8,7 +8,8 @@
             <div class="row mb-2">
                 <div class="col-sm-6">
                     <h1 class="m-0">Dashboard Admin</h1>
-                    <p class="text-muted">Selamat Datang, {{ auth()->user()->name }}</p>
+                    <p class="text-muted mb-1">Selamat Datang, {{ auth()->user()->name }}</p>
+                    <span class="badge badge-info">Role: {{ ucfirst(auth()->user()->role) }}</span>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">

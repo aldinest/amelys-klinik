@@ -111,6 +111,15 @@
                     </a>
                 </li>
 
+                <!-- Maintenance Mode -->
+                <li class="nav-item">
+                    <a href="{{ route('admin.maintenance.index') }}"
+                       class="nav-link {{ request()->routeIs('admin.maintenance.*') ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-tools"></i>
+                        <p>Maintenance Mode</p>
+                    </a>
+                </li>
+
             </ul>
         </nav>
         <!-- /.sidebar-menu -->

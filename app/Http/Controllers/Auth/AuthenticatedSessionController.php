@@ -16,7 +16,15 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): View
     {
-        return view('auth.login');
+        $maintenancePath = storage_path('app/maintenance.json');
+        $maintenanceData = file_exists($maintenancePath)
+            ? json_decode(file_get_contents($maintenancePath), true)
+            : ['active' => false, 'message' => null];
+
+        $maintenanceActive = $maintenanceData['active'] ?? false;
+        $maintenanceMessage = $maintenanceData['message'] ?? null;
+
+        return view('auth.login', compact('maintenanceActive', 'maintenanceMessage'));
     }
 
     /**
@@ -27,6 +35,16 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
+
+        $maintenancePath = storage_path('app/maintenance.json');
+        $maintenanceData = file_exists($maintenancePath)
+            ? json_decode(file_get_contents($maintenancePath), true)
+            : ['active' => false, 'message' => null];
+
+        if (($maintenanceData['active'] ?? false) && Auth::user() && ! Auth::user()->isAdmin()) {
+            return redirect()->route('maintenance.page')
+                ->with('warning', 'Akun Anda saat ini tidak dapat mengakses sistem karena maintenance. Hanya Admin yang dapat masuk.');
+        }
 
         return redirect()->intended(route('dashboard', absolute: false));
     }

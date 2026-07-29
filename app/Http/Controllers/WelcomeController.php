@@ -42,6 +42,14 @@ class WelcomeController extends Controller
         });
 
         // 5. Kirim SEMUA data ke view welcome
-        return view('welcome', compact('news', 'schedules'));
+        $maintenancePath = storage_path('app/maintenance.json');
+        $maintenanceData = file_exists($maintenancePath)
+            ? json_decode(file_get_contents($maintenancePath), true)
+            : ['active' => false, 'message' => null];
+
+        $maintenanceActive = $maintenanceData['active'] ?? false;
+        $maintenanceMessage = $maintenanceData['message'] ?? null;
+
+        return view('welcome', compact('news', 'schedules', 'maintenanceActive', 'maintenanceMessage'));
     }
 }

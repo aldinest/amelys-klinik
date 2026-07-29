@@ -137,6 +137,13 @@
           </div>
      </section>
 
+     @if(!empty($maintenanceActive) && $maintenanceActive)
+         <section class="alert alert-warning text-center" style="margin: 0; border-radius: 0;">
+             <div class="container">
+                 <strong>Perhatian:</strong> {{ $maintenanceMessage ?? 'Sistem sedang dalam perawatan ringan. Beberapa fitur mungkin tidak tersedia sementara.' }}
+             </div>
+         </section>
+     @endif
 
      <!-- HOME / SLIDER -->
      <section id="home" class="slider" data-stellar-background-ratio="0.5">

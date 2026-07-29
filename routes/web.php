@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\PatientController as AdminPatient;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\DoctorDisplayScheduleController;
 use App\Http\Controllers\Admin\NewsController;
+use App\Http\Controllers\Admin\MaintenanceController;
 
 // --- Pengurus Controllers ---
 use App\Http\Controllers\Pengurus\PengurusDashboardController;
@@ -45,6 +46,18 @@ use App\Http\Controllers\Pasien\ProfileController as PasienProfile;
 Route::prefix('/')->group(function () {
     Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
 });
+
+Route::get('/maintenance-info', function () {
+    $maintenancePath = storage_path('app/maintenance.json');
+    $maintenanceData = file_exists($maintenancePath)
+        ? json_decode(file_get_contents($maintenancePath), true)
+        : ['active' => false, 'message' => null];
+
+    return view('maintenance', [
+        'maintenanceActive' => $maintenanceData['active'] ?? false,
+        'maintenanceMessage' => $maintenanceData['message'] ?? 'Aplikasi sedang dalam maintenance. Silakan coba lagi nanti.',
+    ]);
+})->name('maintenance.page');
 
 
 /**
@@ -81,6 +94,11 @@ Route::middleware(['auth', 'role:admin'])
         // Manajemen Berita
         Route::resource('news', NewsController::class);
 
+        // Maintenance Mode
+        Route::get('/maintenance', [MaintenanceController::class, 'index'])->name('maintenance.index');
+        Route::post('/maintenance/enable', [MaintenanceController::class, 'enable'])->name('maintenance.enable');
+        Route::post('/maintenance/disable', [MaintenanceController::class, 'disable'])->name('maintenance.disable');
+
         Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])
             ->name('notifications.index');
     });
@@ -89,7 +107,7 @@ Route::middleware(['auth', 'role:admin'])
  * ROLE: PENGURUS
  * Operasional harian: Reservasi, Rekam Medis, dan Jadwal Dokter.
  */
-Route::middleware(['auth', 'role:pengurus'])
+Route::middleware(['auth', 'role:pengurus', 'maintenance'])
     ->prefix('pengurus')
     ->name('pengurus.')
     ->group(function () {
@@ -141,7 +159,7 @@ Route::middleware(['auth', 'role:pengurus'])
  * ROLE: PASIEN
  * Fitur untuk pasien: Booking, Lihat Rekam Medis, dan Profile.
  */
-Route::middleware(['auth', 'role:pasien'])
+Route::middleware(['auth', 'role:pasien', 'maintenance'])
     ->prefix('pasien')
     ->name('pasien.')
     ->group(function () {
