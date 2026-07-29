@@ -46,23 +46,41 @@
                 <span class="dropdown-header">{{ auth()->user()->unreadNotifications->count() }} Notifikasi Baru</span>
                 
                 @forelse(auth()->user()->unreadNotifications as $notification)
+                    @php
+                        $actionUrl = $notification->data['action_url'] ?? null;
+                        $isClickable = !empty($actionUrl) && !str_contains($actionUrl, 'localhost');
+                    @endphp
                     <div class="dropdown-divider"></div>
-                    <a href="{{ $notification->data['action_url'] }}" class="dropdown-item">
-                        <div class="d-flex align-items-start">
-                            <i class="fas fa-calendar-check mr-2 mt-1 text-primary"></i>
-                            <div style="white-space: normal; line-height: 1.3;">
-                                <span class="font-weight-bold">{{ $notification->data['pesan'] }}</span>
-                                <br>
-                                <small class="text-muted">{{ $notification->data['waktu'] }}</small>
+                    @if($isClickable)
+                        <a href="{{ $actionUrl }}" class="dropdown-item">
+                    @else
+                        <div class="dropdown-item text-muted">
+                    @endif
+                            <div class="d-flex align-items-start">
+                                <i class="fas fa-calendar-check mr-2 mt-1 text-primary"></i>
+                                <div style="white-space: normal; line-height: 1.3;">
+                                    <span class="font-weight-bold">{{ $notification->data['pesan'] }}</span>
+                                    <br>
+                                    <small class="text-muted">{{ $notification->data['waktu'] }}</small>
+                                </div>
                             </div>
+                    @if($isClickable)
+                        </a>
+                    @else
                         </div>
-                    </a>
+                    @endif
                 @empty
                     <div class="dropdown-item text-center text-muted">Tidak ada notifikasi baru</div>
                 @endforelse
                 
                 <div class="dropdown-divider"></div>
-                <a href="#" class="dropdown-item dropdown-footer">Lihat Semua Notifikasi</a>
+                @php
+                    $notificationRoute = auth()->user()->role . '.notifications.index';
+                    if (!Route::has($notificationRoute)) {
+                        $notificationRoute = 'notifications.index';
+                    }
+                @endphp
+                <a href="{{ route($notificationRoute) }}" class="dropdown-item dropdown-footer">Lihat Semua Notifikasi</a>
             </div>
         </li>
 

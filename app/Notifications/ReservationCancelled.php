@@ -50,9 +50,12 @@ class ReservationCancelled extends Notification
      */
     public function toArray(object $notifiable): array
     {
-        // 3. Sekarang $this->details['tanggal'] sudah aman digunakan
+        $reason = $this->details['alasan'] ?? 'Tidak ada alasan tertera.';
+
         return [
-            'pesan' => 'Reservasi Anda pada ' . $this->details['tanggal'] . ' telah dibatalkan.',
+            'title' => 'Reservasi Dibatalkan',
+            'pesan' => 'Reservasi Anda pada ' . $this->details['tanggal'] . ' telah dibatalkan. Alasan: ' . $reason,
+            'alasan' => $reason,
             'action_url' => url('/pasien/reservations'),
             'waktu' => now()->format('H:i d-m-Y'),
         ];

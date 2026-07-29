@@ -316,12 +316,17 @@
                                                 <i class="fas fa-check"></i>
                                             </button>
                                         </form>
-                                        <form action="{{ route('pengurus.reservations.cancel', $res->id) }}" method="POST" onsubmit="return confirm('Tolak reservasi ini?')">
-                                            @csrf @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm" title="Tolak">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </form>
+                                        <button type="button" class="btn btn-danger btn-sm btn-reject-pending" title="Tolak"
+                                            data-toggle="modal"
+                                            data-target="#modalReject"
+                                            data-id="{{ $res->id }}"
+                                            data-name="{{ $res->patient->name }}"
+                                            data-tgl="{{ \Carbon\Carbon::parse($res->schedule->schedule_date)->translatedFormat('d M Y') }}"
+                                            data-action="{{ $res->action ?? '-' }}"
+                                            data-route="{{ route('pengurus.reservations.reject', $res->id) }}"
+                                        >
+                                            <i class="fas fa-times"></i>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -336,5 +341,62 @@
             </div>
         </div>
     </div>
+</div>
+
+{{-- Modal reject reservasi pending dengan alasan --}}
+<div class="modal fade" id="modalReject" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title font-weight-bold"><i class="fas fa-times-circle mr-2"></i> Tolak Reservasi</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span>&times;</span></button>
+            </div>
+            <form id="formRejectReservation" method="POST" action="">
+                @csrf
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <p class="mb-1 text-muted">Pasien:</p>
+                        <h6 id="rejectPatientName" class="font-weight-bold"></h6>
+                    </div>
+                    <div class="mb-3">
+                        <p class="mb-1 text-muted">Jadwal:</p>
+                        <h6 id="rejectScheduleInfo" class="font-weight-bold"></h6>
+                    </div>
+                    <div class="form-group">
+                        <label class="font-weight-bold">Alasan Pembatalan</label>
+                        <textarea name="rejection_reason" class="form-control" rows="4" required placeholder="Tuliskan alasan pembatalan untuk pasien..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-danger">Kirim Pembatalan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@push('js')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const rejectButtons = document.querySelectorAll('.btn-reject-pending');
+        const form = document.getElementById('formRejectReservation');
+        const patientName = document.getElementById('rejectPatientName');
+        const scheduleInfo = document.getElementById('rejectScheduleInfo');
+
+        rejectButtons.forEach(function (button) {
+            button.addEventListener('click', function () {
+                const route = this.dataset.route;
+                const name = this.dataset.name;
+                const schedule = this.dataset.tgl;
+
+                form.action = route;
+                patientName.textContent = name;
+                scheduleInfo.textContent = schedule;
+            });
+        });
+    });
+</script>
+@endpush
 </div>
 @endsection

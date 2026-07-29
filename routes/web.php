@@ -80,6 +80,9 @@ Route::middleware(['auth', 'role:admin'])
 
         // Manajemen Berita
         Route::resource('news', NewsController::class);
+
+        Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])
+            ->name('notifications.index');
     });
 
 /**
@@ -128,6 +131,9 @@ Route::middleware(['auth', 'role:pengurus'])
         Route::resource('medical-records', MedicalRecordController::class)->only(['index', 'create', 'store', 'show']);
         Route::get('medical-records/{id}/edit', [MedicalRecordController::class, 'edit'])->name('medical-records.edit');
         Route::put('medical-records/{id}', [MedicalRecordController::class, 'update'])->name('medical-records.update');
+
+        Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])
+            ->name('notifications.index');
         
     });
 
@@ -149,6 +155,9 @@ Route::middleware(['auth', 'role:pasien'])
         
         // Rekam Medis Pribadi
         Route::resource('medical-records', PasienMedicalRecord::class);
+
+        Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])
+            ->name('notifications.index');
 
         // Profile Pasien
         Route::get('/profile', [PasienProfile::class, 'index'])->name('profile.index');
@@ -177,6 +186,12 @@ Route::middleware(['auth'])->group(function () {
         auth()->user()->unreadNotifications->markAsRead();
         return response()->json(['status' => 'success']);
     })->name('notifications.markAsRead');
+
+    Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])
+        ->name('notifications.index');
+
+    Route::post('/notifications/mark-all-read', [App\Http\Controllers\NotificationController::class, 'markAllRead'])
+        ->name('notifications.markAllRead');
 });
 
 /**

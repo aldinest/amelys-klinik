@@ -165,6 +165,16 @@ class ReservationController extends Controller
         }
 
         $reservation->update(['status' => 'cancelled']);
+
+        $patientUser = optional($reservation->patient)->user;
+        if ($patientUser) {
+            $details = [
+                'tanggal' => Carbon::parse($reservation->doctorSchedule->schedule_date)->format('d-m-Y'),
+                'alasan' => 'Reservasi dibatalkan oleh pengurus.',
+            ];
+            $patientUser->notify(new ReservationCancelled($details));
+        }
+
         return back()->with('success', 'Reservasi berhasil dibatalkan');
     }
 
@@ -222,23 +232,25 @@ class ReservationController extends Controller
         return back()->with('success', 'Reservasi berhasil disetujui.');
     }
 
-    public function reject($id)
+    public function reject(Request $request, $id)
     {
+        $request->validate([
+            'rejection_reason' => 'required|string|max:255',
+        ]);
+
         $res = Reservation::findOrFail($id);
-        $res->update(['status' => 'cancelled']); 
+        $res->update(['status' => 'cancelled']);
 
-        // Menggunakan relasi yang baru saja dibuat
-        $pasien = $res->user; 
-
-        if ($pasien) {
+        $patientUser = optional($res->patient)->user;
+        if ($patientUser) {
             $details = [
-                'tanggal' => \Carbon\Carbon::parse($res->tanggal_reservasi)->format('d-m-Y'),
+                'tanggal' => Carbon::parse($res->doctorSchedule->schedule_date)->format('d-m-Y'),
+                'alasan' => $request->rejection_reason,
             ];
-            
-            $pasien->notify(new \App\Notifications\ReservationCancelled($details));
+            $patientUser->notify(new ReservationCancelled($details));
         }
 
-        return back()->with('success', 'Reservasi telah ditolak.');
+        return back()->with('success', 'Reservasi telah ditolak dan pasien diberi tahu.');
     }
 
 }

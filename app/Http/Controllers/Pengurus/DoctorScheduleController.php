@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Pengurus;
 use App\Http\Controllers\Controller;
 use App\Models\Doctor;
 use App\Models\DoctorSchedule;
+use App\Models\User;
+use App\Notifications\ScheduleNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 
 class DoctorScheduleController extends Controller
 {
@@ -59,13 +62,16 @@ class DoctorScheduleController extends Controller
         'end_time.after'         => 'Jam selesai harus lebih besar dari jam mulai',
     ]);
 
-    DoctorSchedule::create([
+    $schedule = DoctorSchedule::create([
         'doctor_id'     => $request->doctor_id,
         'schedule_date' => $request->schedule_date,
         'start_time'    => $request->start_time,
         'end_time'      => $request->end_time,
         'quota'         => $request->quota,
     ]);
+
+    $users = User::whereIn('role', ['pengurus', 'pasien'])->get();
+    Notification::send($users, new ScheduleNotification($schedule, 'ditambahkan'));
 
         return redirect()
             ->route('pengurus.doctor_schedules.index')
@@ -100,6 +106,9 @@ class DoctorScheduleController extends Controller
         'quota'         => $request->quota,
     ]);
 
+    $users = User::whereIn('role', ['pengurus', 'pasien'])->get();
+    Notification::send($users, new ScheduleNotification($doctor_schedule, 'diubah'));
+
         return redirect()
             ->route('pengurus.doctor_schedules.index')
             ->with('success', 'Jadwal Berhasil Di Update');
@@ -108,6 +117,9 @@ class DoctorScheduleController extends Controller
     public function destroy(DoctorSchedule $doctorSchedule)
     {
         $doctorSchedule->delete();
+
+        $users = User::whereIn('role', ['pengurus', 'pasien'])->get();
+        Notification::send($users, new ScheduleNotification($doctorSchedule, 'dihapus'));
 
         return redirect()
             ->route('pengurus.doctor_schedules.index')

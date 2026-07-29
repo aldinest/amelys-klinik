@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\News;
+use App\Models\User;
+use App\Notifications\NewsNotification;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http; 
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
 
 class NewsController extends Controller
 {
@@ -33,11 +36,14 @@ class NewsController extends Controller
         // 1. Simpan data berita ke database internal
         $news = News::create($request->all());
 
-        // 2. LOGIKA ONE SIGNAL (Broadcaster ke HP Pasien/User)
-        // Gak perlu tarik token dari DB, langsung tembak ke semua yang Subscribe lewat OneSignal
+        // 2. Kirim notifikasi database ke pengurus + pasien
+        $users = User::whereIn('role', ['pengurus', 'pasien'])->get();
+        Notification::send($users, new NewsNotification($news));
+
+        // 3. LOGIKA ONE SIGNAL (Broadcaster ke HP Pasien/User)
         $this->sendOneSignalNotification($news);
 
-        return redirect()->route('admin.news.index')->with('success', 'Info terbaru berhasil diterbitkan dan notifikasi OneSignal terkirim!');
+        return redirect()->route('admin.news.index')->with('success', 'Info terbaru berhasil diterbitkan dan notifikasi terkirim!');
     }
 
     /**
@@ -105,7 +111,10 @@ class NewsController extends Controller
         $news = News::findOrFail($id);
         $news->update($request->all());
 
-        return redirect()->route('admin.news.index')->with('success', 'Info berhasil diperbarui!');
+        $users = User::whereIn('role', ['pengurus', 'pasien'])->get();
+        Notification::send($users, new NewsNotification($news, 'diubah'));
+
+        return redirect()->route('admin.news.index')->with('success', 'Info berhasil diperbarui dan notifikasi terkirim!');
     }
 
     public function destroy($id)
