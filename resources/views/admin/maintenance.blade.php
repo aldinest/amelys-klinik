@@ -41,7 +41,7 @@
                                 <h5 class="mb-1">{{ $isDown ? 'Mode maintenance aktif' : 'Mode maintenance nonaktif' }}</h5>
                                 <p class="mb-0">
                                     {{ $isDown
-                                        ? 'Pengunjung publik akan melihat halaman perawatan. Panel admin tetap dapat diakses melalui URL admin.'
+                                        ? 'Maintenance saat ini sedang aktif untuk target yang dipilih. Panel admin tetap dapat diakses melalui URL admin.'
                                         : 'Aplikasi berjalan normal. Semua pengunjung dapat mengakses halaman publik.'
                                     }}
                                 </p>
@@ -49,24 +49,38 @@
 
                             <div class="row">
                                 <div class="col-md-12 mb-3">
-                                    <div class="form-group">
-                                        <label for="message">Pesan Maintenance</label>
-                                        <textarea id="message" name="message" rows="4" class="form-control" placeholder="Contoh: Sistem sedang dalam pemeliharaan ringan. Silakan kembali dalam 10 menit.">{{ old('message', $message ?? '') }}</textarea>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
                                     <form method="POST" action="{{ route('admin.maintenance.enable') }}">
                                         @csrf
-                                        <input type="hidden" name="message" value="{{ old('message', $message ?? 'Aplikasi saat ini sedang dalam perawatan. Silakan cek kembali beberapa saat lagi.') }}">
+                                        <div class="form-group">
+                                            <label for="message">Pesan Maintenance</label>
+                                            <textarea id="message" name="message" rows="4" class="form-control" placeholder="Contoh: Sistem sedang dalam pemeliharaan ringan. Silakan kembali dalam 10 menit.">{{ old('message', $message ?? '') }}</textarea>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="target">Target Maintenance</label>
+                                            <select id="target" name="target" class="form-control">
+                                                <option value="pasien" {{ (old('target', $target ?? 'pengurus_pasien') === 'pasien') ? 'selected' : '' }}>Pasien saja</option>
+                                                <option value="pengurus_pasien" {{ (old('target', $target ?? 'pengurus_pasien') === 'pengurus_pasien') ? 'selected' : '' }}>Pengurus + Pasien</option>
+                                            </select>
+                                            <small class="form-text text-muted">
+                                                Pilih apakah maintenance hanya berlaku untuk pasien, atau juga untuk pengurus.
+                                                @if($isDown)
+                                                    <br><strong>Catatan:</strong> Jika maintenance sedang aktif dan Anda ingin mengubah target dari pasien saja ke pengurus + pasien, atau sebaliknya, Anda harus menonaktifkan maintenance terlebih dahulu, lalu aktifkan lagi dengan target yang baru.
+                                                @else
+                                                    <br>Ketika maintenance belum aktif, Anda bisa langsung memilih target lalu klik tombol aktifkan.
+                                                @endif
+                                            </small>
+                                        </div>
+
                                         <button type="submit" class="btn btn-danger btn-block" {{ $isDown ? 'disabled' : '' }}>
                                             Aktifkan Maintenance
                                         </button>
                                     </form>
                                 </div>
-                                <div class="col-md-6 mb-3">
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
                                     <form method="POST" action="{{ route('admin.maintenance.disable') }}">
                                         @csrf
                                         <button type="submit" class="btn btn-success btn-block" {{ $isDown ? '' : 'disabled' }}>
@@ -78,7 +92,7 @@
 
                             <div class="card card-outline card-secondary mt-3">
                                 <div class="card-body">
-                                    <p class="mb-0"><strong>Catatan:</strong> Fitur ini hanya menampilkan alert di halaman depan apabila maintenance diaktifkan. Tidak menggunakan mode down Laravel sehingga login multi-role tetap bisa diakses.</p>
+                                    <p class="mb-0"><strong>Catatan:</strong> Fitur ini hanya menampilkan halaman perawatan di bagian publik sesuai target yang dipilih. Admin tetap dapat masuk. Jika ingin mengubah target dari pasien saja ke pengurus + pasien, atau sebaliknya, matikan maintenance dulu lalu aktifkan kembali dengan target baru.</p>
                                 </div>
                             </div>
                         </div>

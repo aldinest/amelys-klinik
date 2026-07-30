@@ -18,25 +18,45 @@ class CheckMaintenanceMode
         $path = $this->maintenanceFilePath();
 
         if (! file_exists($path)) {
-            return ['active' => false, 'message' => null];
+            return ['active' => false, 'message' => null, 'target' => 'pengurus_pasien'];
         }
 
-        return json_decode(file_get_contents($path), true) ?: ['active' => false, 'message' => null];
+        return json_decode(file_get_contents($path), true) ?: ['active' => false, 'message' => null, 'target' => 'pengurus_pasien'];
+    }
+
+    private function shouldBlockUser(array $maintenance, ?
+    \App\Models\User $user = null): bool
+    {
+        if (! ($maintenance['active'] ?? false)) {
+            return false;
+        }
+
+        if ($user && $user->isAdmin()) {
+            return false;
+        }
+
+        $target = $maintenance['target'] ?? 'pengurus_pasien';
+
+        if ($target === 'pasien') {
+            return $user?->isPasien() ?? false;
+        }
+
+        if ($target === 'pengurus_pasien') {
+            return $user?->isPengurus() || $user?->isPasien() ?? false;
+        }
+
+        return false;
     }
 
     public function handle(Request $request, Closure $next)
     {
         $maintenance = $this->maintenanceData();
 
-        if (! ($maintenance['active'] ?? false)) {
-            return $next($request);
-        }
-
-        if (Auth::check() && Auth::user()->isAdmin()) {
-            return $next($request);
-        }
-
         if ($request->routeIs('maintenance.page')) {
+            return $next($request);
+        }
+
+        if (! $this->shouldBlockUser($maintenance, Auth::user())) {
             return $next($request);
         }
 

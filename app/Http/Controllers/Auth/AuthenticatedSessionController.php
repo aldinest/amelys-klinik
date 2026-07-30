@@ -41,9 +41,21 @@ class AuthenticatedSessionController extends Controller
             ? json_decode(file_get_contents($maintenancePath), true)
             : ['active' => false, 'message' => null];
 
-        if (($maintenanceData['active'] ?? false) && Auth::user() && ! Auth::user()->isAdmin()) {
+        $user = Auth::user();
+        $target = $maintenanceData['target'] ?? 'pengurus_pasien';
+        $blockedForRole = false;
+
+        if ($user && ! $user->isAdmin()) {
+            if ($target === 'pasien' && $user->isPasien()) {
+                $blockedForRole = true;
+            } elseif ($target === 'pengurus_pasien' && ($user->isPengurus() || $user->isPasien())) {
+                $blockedForRole = true;
+            }
+        }
+
+        if (($maintenanceData['active'] ?? false) && $blockedForRole) {
             return redirect()->route('maintenance.page')
-                ->with('warning', 'Akun Anda saat ini tidak dapat mengakses sistem karena maintenance. Hanya Admin yang dapat masuk.');
+                ->with('warning', 'Akun Anda saat ini tidak dapat mengakses sistem karena maintenance untuk role Anda.');
         }
 
         return redirect()->intended(route('dashboard', absolute: false));
